@@ -27,9 +27,20 @@ export default function DashboardPage() {
     setProgress(getProgress());
     setAssessed(localStorage.getItem("english-buddy-assessed") === "true");
 
-    // Check daily reward
+    // Check daily reward — mark immediately to prevent re-trigger on refresh
     if (shouldShowDailyReward()) {
       setShowDailyReward(true);
+      // Mark reward date immediately so refresh won't re-trigger
+      const today = new Date().toISOString().slice(0, 10);
+      const key = "english-buddy-progress";
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const data = JSON.parse(raw);
+          data.lastLoginRewardDate = today;
+          localStorage.setItem(key, JSON.stringify(data));
+        }
+      } catch { /* ignore */ }
     }
 
     // Recent achievements

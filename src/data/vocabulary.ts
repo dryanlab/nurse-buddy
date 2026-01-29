@@ -943,3 +943,9 @@ export const vocabulary: VocabWord[] = [
   { id: "mh64", word: "psychoeducation", phonetic: "/ˌsaɪkoʊˌedʒuˈkeɪʃn/", chinese: "心理健康教育", example: "Provide psychoeducation about the illness.", exampleChinese: "提供关于疾病的心理健康教育。", category: "mental", difficulty: "intermediate" },
   { id: "mh65", word: "recovery", phonetic: "/rɪˈkʌvəri/", chinese: "康复", example: "Recovery from mental illness is possible.", exampleChinese: "精神疾病的康复是可能的。", category: "mental", difficulty: "basic" },
 ];
+
+// Import additional vocabulary from split files
+import { additionalVocabulary } from "./vocab";
+
+// Combined vocabulary with all words
+export const allVocabulary: VocabWord[] = [...vocabulary, ...additionalVocabulary];
