@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Mic, MessageCircle, BookOpen, Flame, Target, Trophy, Star, Zap } from "lucide-react";
+import { Mic, MessageCircle, BookOpen, Flame, Target, Trophy, Star, Zap, Brain } from "lucide-react";
 import { getProgress, getLevelInfo, recordActivity, shouldShowDailyReward, type ProgressData } from "@/lib/progress-store";
+import { loadCards, getStats, hasCompletedReviewToday, getReviewStreak } from "@/lib/srs-engine";
 import { getCoinState } from "@/lib/coin-store";
 import { getAchievementState, ALL_ACHIEVEMENTS } from "@/lib/achievements";
 import { getUser } from "@/lib/auth-store";
@@ -189,6 +190,54 @@ export default function DashboardPage() {
           </div>
         </motion.div>
       )}
+
+      {/* SRS Review Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.18 }}
+        className="mt-4"
+      >
+        {(() => {
+          const srsCards = loadCards();
+          const srsStats = getStats(srsCards);
+          const reviewDone = hasCompletedReviewToday();
+          const reviewStreak = getReviewStreak();
+          return (
+            <Link
+              href="/dashboard/review"
+              className={`block rounded-2xl p-4 active:scale-[0.98] transition-transform border ${
+                reviewDone
+                  ? "bg-[#EEFBF4] border-[#6BCB9E]/20"
+                  : "bg-gradient-to-r from-[#FFF0EE] to-[#FFE8E4] border-[#FF6B6B]/10"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                  reviewDone ? "bg-[#6BCB9E]" : "bg-[#FF6B6B]"
+                }`}>
+                  <Brain className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="font-semibold text-[#2D2D2D]">
+                    {reviewDone ? "✅ 今日复习完成" : "📚 今日复习"}
+                  </div>
+                  <div className="text-xs text-[#9CA3AF]">
+                    {reviewDone
+                      ? `已掌握 ${srsStats.mastered} 词${reviewStreak > 1 ? ` · 🔥 ${reviewStreak}天` : ""}`
+                      : `${srsStats.dueToday} 词待复习 · ${srsStats.total} 词总计`}
+                  </div>
+                </div>
+                {!reviewDone && (
+                  <span className="text-xs bg-[#FF6B6B] text-white px-3 py-1 rounded-full font-medium">
+                    开始
+                  </span>
+                )}
+              </div>
+            </Link>
+          );
+        })()}
+      </motion.div>
 
       {/* Quick Actions */}
       <motion.div

@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Volume2, Check, RotateCcw, ChevronLeft, ChevronRight, Filter } from "lucide-react";
+import { Volume2, Check, RotateCcw, ChevronLeft, ChevronRight, Filter, Brain } from "lucide-react";
 import { vocabulary, vocabCategories, type VocabWord } from "@/data/vocabulary";
 import { speak } from "@/lib/speech";
 import { getProgress, toggleVocabMastered } from "@/lib/progress-store";
+import { addCard, hasCard } from "@/lib/srs-engine";
 
 export default function VocabularyPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -13,6 +14,7 @@ export default function VocabularyPage() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [mastered, setMastered] = useState<Set<string>>(new Set());
   const [showFilter, setShowFilter] = useState(false);
+  const [inSrs, setInSrs] = useState<Set<string>>(new Set());
 
   const filteredWords = selectedCategory === "all"
     ? vocabulary
@@ -23,6 +25,12 @@ export default function VocabularyPage() {
   useEffect(() => {
     const progress = getProgress();
     setMastered(new Set(progress.vocabMastered));
+    // Check which words are in SRS
+    const srsSet = new Set<string>();
+    for (const w of vocabulary) {
+      if (hasCard(w.id)) srsSet.add(w.id);
+    }
+    setInSrs(srsSet);
   }, []);
 
   useEffect(() => {
@@ -171,10 +179,10 @@ export default function VocabularyPage() {
       </div>
 
       {/* Actions */}
-      <div className="flex justify-center gap-3 mt-6">
+      <div className="flex justify-center gap-2 mt-6 flex-wrap">
         <button
           onClick={handleMastered}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium active:scale-95 transition-all ${
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium active:scale-95 transition-all ${
             isMastered
               ? "bg-[#6BCB9E] text-white"
               : "bg-[#EEFBF4] text-[#6BCB9E] border border-[#6BCB9E]/20"
@@ -183,8 +191,21 @@ export default function VocabularyPage() {
           <Check className="w-4 h-4" /> {isMastered ? "已掌握" : "标记掌握"}
         </button>
         <button
+          onClick={() => {
+            addCard(word.id, "vocab");
+            setInSrs((s) => new Set([...s, word.id]));
+          }}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium active:scale-95 transition-all ${
+            inSrs.has(word.id)
+              ? "bg-[#7C3AED] text-white"
+              : "bg-[#F3E8FF] text-[#7C3AED] border border-[#7C3AED]/20"
+          }`}
+        >
+          <Brain className="w-4 h-4" /> {inSrs.has(word.id) ? "已加入复习" : "加入复习"}
+        </button>
+        <button
           onClick={() => { toggleVocabMastered(word.id); handleNext(); }}
-          className="flex items-center gap-2 bg-[#FFF5EB] text-[#F4A261] px-5 py-2.5 rounded-xl text-sm font-medium active:scale-95 transition-transform"
+          className="flex items-center gap-2 bg-[#FFF5EB] text-[#F4A261] px-4 py-2.5 rounded-xl text-sm font-medium active:scale-95 transition-transform"
         >
           <RotateCcw className="w-4 h-4" /> 需复习
         </button>
