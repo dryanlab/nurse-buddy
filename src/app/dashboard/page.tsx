@@ -94,7 +94,7 @@ export default function DashboardPage() {
               <p className="text-sm text-[#9CA3AF] mb-1">每日登录奖励</p>
               <div className="flex items-center justify-center gap-4 my-4">
                 <div className="bg-[#FF6B6B]/10 rounded-xl px-4 py-2">
-                  <span className="text-sm font-bold text-[#FF6B6B]">+5 XP</span>
+                  <span className="text-sm font-bold text-[#FF6B6B]">+5 学习积分</span>
                 </div>
                 <div className="bg-[#FFF5EB] rounded-xl px-4 py-2">
                   <span className="text-sm font-bold text-[#F4A261]">+5 🪙</span>
@@ -124,7 +124,7 @@ export default function DashboardPage() {
         <p className="text-sm text-[#9CA3AF] mt-1">今天也要加油练习英语哦</p>
       </motion.div>
 
-      {/* Level + XP Card */}
+      {/* Level + 学习积分 Card */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -147,8 +147,8 @@ export default function DashboardPage() {
           />
         </div>
         <div className="flex justify-between mt-1 text-[10px] opacity-80">
-          <span>{progress?.xp ?? 0} XP</span>
-          <span>{levelInfo.nextXp} XP</span>
+          <span>{progress?.xp ?? 0}  学习积分</span>
+          <span>{levelInfo.nextXp}  学习积分</span>
         </div>
       </motion.div>
 

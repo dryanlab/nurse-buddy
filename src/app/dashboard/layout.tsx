@@ -81,7 +81,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   Lv.{levelInfo.level}
                 </span>
               </div>
-              {/* XP Bar */}
+              {/* 学习积分 Bar */}
               <div className="flex items-center gap-2 mt-1">
                 <div className="flex-1 h-1.5 bg-[#F3E8E2] rounded-full overflow-hidden">
                   <div
@@ -90,7 +90,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   />
                 </div>
                 <span className="text-[9px] text-[#9CA3AF] whitespace-nowrap">
-                  {getProgress().xp} XP
+                  {getProgress().xp} 学习积分
                 </span>
               </div>
             </div>
