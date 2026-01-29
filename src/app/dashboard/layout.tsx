@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Mic, MessageCircle, BookOpen, Settings, Home, ShoppingBag, Trophy } from "lucide-react";
+import { Mic, MessageCircle, BookOpen, Settings, Home, ShoppingBag, Trophy, Brain } from "lucide-react";
 import { getUser, isLoggedIn, type UserProfile } from "@/lib/auth-store";
 import { getProgress, getLevelInfo } from "@/lib/progress-store";
 import { getCoinState } from "@/lib/coin-store";
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "首页" },
+  { href: "/dashboard/review", icon: Brain, label: "复习" },
   { href: "/dashboard/pronunciation", icon: Mic, label: "发音" },
   { href: "/dashboard/scenarios", icon: MessageCircle, label: "对话" },
   { href: "/dashboard/vocabulary", icon: BookOpen, label: "词汇" },

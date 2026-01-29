@@ -9,6 +9,7 @@ import { recordPronunciation } from "@/lib/progress-store";
 
 type PracticeState = "idle" | "listening" | "evaluating" | "result";
 type DifficultyFilter = "all" | "easy" | "medium" | "hard";
+type TypeFilter = "all" | "word" | "phrase";
 
 export default function PronunciationPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -24,14 +25,16 @@ export default function PronunciationPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [randomMode, setRandomMode] = useState(false);
   const [showTip, setShowTip] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
 
   const filteredItems = useMemo(() => {
     return pronunciationItems.filter((item) => {
       if (difficultyFilter !== "all" && item.difficulty !== difficultyFilter) return false;
       if (categoryFilter !== "all" && item.category !== categoryFilter) return false;
+      if (typeFilter !== "all" && item.type !== typeFilter) return false;
       return true;
     });
-  }, [difficultyFilter, categoryFilter]);
+  }, [difficultyFilter, categoryFilter, typeFilter]);
 
   const safeIndex = Math.min(currentIndex, Math.max(0, filteredItems.length - 1));
   const item: PronunciationItem | undefined = filteredItems[safeIndex];
@@ -197,6 +200,26 @@ export default function PronunciationPage() {
             className="overflow-hidden mb-4"
           >
             <div className="bg-white rounded-2xl p-4 border border-[#F3E8E2] space-y-3">
+              {/* Type */}
+              <div>
+                <div className="text-xs text-[#9CA3AF] mb-2 font-medium">类型</div>
+                <div className="flex flex-wrap gap-2">
+                  {([["all", "全部"], ["word", "🔤 单词"], ["phrase", "📝 短语"]] as const).map(([val, label]) => (
+                    <button
+                      key={val}
+                      onClick={() => { setTypeFilter(val as TypeFilter); setCurrentIndex(0); resetState(); }}
+                      className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
+                        typeFilter === val
+                          ? "bg-[#F0F4FF] text-[#7C83FD] ring-2 ring-offset-1 ring-[#7C83FD]"
+                          : "bg-[#F9FAFB] text-[#9CA3AF]"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Difficulty */}
               <div>
                 <div className="text-xs text-[#9CA3AF] mb-2 font-medium">难度</div>
@@ -257,16 +280,21 @@ export default function PronunciationPage() {
       </AnimatePresence>
 
       {/* Category Badge */}
-      <div className="mb-4">
+      <div className="mb-4 flex flex-wrap gap-2">
         <span className="text-xs bg-[#FFF0EE] text-[#FF6B6B] px-3 py-1 rounded-full font-medium">
           {item.category}
         </span>
-        <span className={`text-xs ml-2 px-3 py-1 rounded-full font-medium ${
+        <span className={`text-xs px-3 py-1 rounded-full font-medium ${
           item.difficulty === "easy" ? "bg-[#EEFBF4] text-[#6BCB9E]" :
           item.difficulty === "medium" ? "bg-[#FFF5EB] text-[#F4A261]" :
           "bg-[#FFF0EE] text-[#FF6B6B]"
         }`}>
           {item.difficulty === "easy" ? "简单" : item.difficulty === "medium" ? "中等" : "困难"}
+        </span>
+        <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+          item.type === "phrase" ? "bg-[#F0F4FF] text-[#7C83FD]" : "bg-[#F3F4F6] text-[#9CA3AF]"
+        }`}>
+          {item.type === "phrase" ? "📝 短语" : "🔤 单词"}
         </span>
       </div>
 
@@ -279,7 +307,9 @@ export default function PronunciationPage() {
       >
         {/* Word Display */}
         <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-[#2D2D2D] mb-2">{item.word}</h2>
+          <h2 className={`font-bold text-[#2D2D2D] mb-2 ${
+            item.type === "phrase" ? "text-xl leading-relaxed" : "text-3xl"
+          }`}>{item.word}</h2>
           {/* In random mode, hide phonetic until revealed */}
           {randomMode && !showTip && state !== "result" ? (
             <button
@@ -290,7 +320,7 @@ export default function PronunciationPage() {
             </button>
           ) : (
             <>
-              <p className="text-lg text-[#9CA3AF] font-mono">{item.phonetic}</p>
+              <p className={`text-[#9CA3AF] font-mono ${item.type === "phrase" ? "text-sm leading-relaxed" : "text-lg"}`}>{item.phonetic}</p>
               <p className="text-sm text-[#6B7280] mt-1">{item.chinese}</p>
             </>
           )}
