@@ -2,7 +2,51 @@
 
 // ── Speech Synthesis (TTS) ──
 
-export function speak(text: string, rate = 1): Promise<void> {
+// Current audio element for stopping
+let currentAudio: HTMLAudioElement | null = null;
+
+export async function speak(text: string, rate = 1): Promise<void> {
+  // Stop any currently playing audio
+  stopSpeaking();
+
+  // Try OpenAI TTS first (much more natural)
+  try {
+    const res = await fetch("/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, speed: rate > 0.5 ? rate : 0.9 }),
+    });
+
+    if (res.ok) {
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      return new Promise((resolve, reject) => {
+        const audio = new Audio(url);
+        currentAudio = audio;
+        audio.onended = () => { URL.revokeObjectURL(url); currentAudio = null; resolve(); };
+        audio.onerror = (e) => { URL.revokeObjectURL(url); currentAudio = null; reject(e); };
+        audio.play().catch(reject);
+      });
+    }
+  } catch {
+    // Fall through to Web Speech API
+  }
+
+  // Fallback: Web Speech API
+  return speakWithWebSpeech(text, rate);
+}
+
+export function stopSpeaking() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+  if (typeof window !== "undefined" && window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+}
+
+function speakWithWebSpeech(text: string, rate = 1): Promise<void> {
   return new Promise((resolve, reject) => {
     if (typeof window === "undefined" || !window.speechSynthesis) {
       reject(new Error("Speech synthesis not supported"));
@@ -15,7 +59,6 @@ export function speak(text: string, rate = 1): Promise<void> {
     utterance.rate = rate;
     utterance.pitch = 1;
 
-    // Try to find a good English voice
     const voices = window.speechSynthesis.getVoices();
     const englishVoice = voices.find(
       (v) => v.lang === "en-US" && (v.name.includes("Samantha") || v.name.includes("Google") || v.name.includes("Female"))
