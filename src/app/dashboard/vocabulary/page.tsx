@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Volume2, Check, RotateCcw, ChevronLeft, ChevronRight, Filter, Brain } from "lucide-react";
+import { Volume2, Check, RotateCcw, ChevronLeft, ChevronRight, Filter, Brain, Shuffle } from "lucide-react";
 import { vocabulary, vocabCategories, type VocabWord } from "@/data/vocabulary";
 import { speak } from "@/lib/speech";
 import { getProgress, toggleVocabMastered } from "@/lib/progress-store";
@@ -16,9 +16,26 @@ export default function VocabularyPage() {
   const [showFilter, setShowFilter] = useState(false);
   const [inSrs, setInSrs] = useState<Set<string>>(new Set());
 
-  const filteredWords = selectedCategory === "all"
+  const [shuffledWords, setShuffledWords] = useState<VocabWord[]>([]);
+  const [isShuffled, setIsShuffled] = useState(false);
+
+  const baseWords = selectedCategory === "all"
     ? vocabulary
     : vocabulary.filter((w) => w.category === selectedCategory);
+
+  const filteredWords = isShuffled ? shuffledWords : baseWords;
+
+  const handleShuffle = () => {
+    const arr = [...baseWords];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    setShuffledWords(arr);
+    setIsShuffled(true);
+    setCurrentIndex(0);
+    setIsFlipped(false);
+  };
 
   const word: VocabWord | undefined = filteredWords[currentIndex];
 
@@ -36,6 +53,7 @@ export default function VocabularyPage() {
   useEffect(() => {
     setCurrentIndex(0);
     setIsFlipped(false);
+    setIsShuffled(false);
   }, [selectedCategory]);
 
   const handleSpeak = useCallback(async () => {
@@ -88,12 +106,21 @@ export default function VocabularyPage() {
             已掌握 {mastered.size} / {vocabulary.length} 词
           </p>
         </div>
-        <button
-          onClick={() => setShowFilter(!showFilter)}
-          className={`p-2 rounded-lg transition-colors ${showFilter ? "bg-[#FFF0EE] text-[#FF6B6B]" : "text-[#9CA3AF]"}`}
-        >
-          <Filter className="w-5 h-5" />
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleShuffle}
+            className={`p-2 rounded-lg transition-colors ${isShuffled ? "bg-[#FFF0EE] text-[#FF6B6B]" : "text-[#9CA3AF] hover:text-[#FF6B6B]"}`}
+            title="Shuffle · 随机排列"
+          >
+            <Shuffle className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setShowFilter(!showFilter)}
+            className={`p-2 rounded-lg transition-colors ${showFilter ? "bg-[#FFF0EE] text-[#FF6B6B]" : "text-[#9CA3AF]"}`}
+          >
+            <Filter className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Category Filter */}
