@@ -17,7 +17,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     const user = getUser();
-    if (user) router.replace("/dashboard");
+    if (user) { router.replace("/dashboard"); return; }
+    // Check Supabase session (Google OAuth callback)
+    import("@/lib/auth-store").then(({ getSessionUser }) =>
+      getSessionUser().then((su) => { if (su) router.replace("/dashboard"); })
+    );
   }, [router]);
 
   async function handleLogin() {

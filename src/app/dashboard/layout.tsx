@@ -28,16 +28,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!isLoggedIn()) {
+    async function init() {
+      // First check localStorage (fast)
+      if (isLoggedIn()) {
+        const u = getUser();
+        setUser(u);
+        const p = getProgress();
+        setLevelInfo(getLevelInfo(p.xp));
+        setCoins(getCoinState().coins);
+        setReady(true);
+        return;
+      }
+      // Then check Supabase session (for Google OAuth callback)
+      const { getSessionUser, ensureProfile } = await import("@/lib/auth-store");
+      const sessionUser = await getSessionUser();
+      if (sessionUser) {
+        setUser(sessionUser);
+        const p = getProgress();
+        setLevelInfo(getLevelInfo(p.xp));
+        setCoins(getCoinState().coins);
+        setReady(true);
+        return;
+      }
+      // Check if we need profile setup (Google OAuth first time)
+      const { needsSetup } = await ensureProfile();
+      if (needsSetup) {
+        router.replace("/complete-profile");
+        return;
+      }
+      // Not logged in at all
       router.replace("/login");
-      return;
     }
-    const u = getUser();
-    setUser(u);
-    const p = getProgress();
-    setLevelInfo(getLevelInfo(p.xp));
-    setCoins(getCoinState().coins);
-    setReady(true);
+    init();
   }, [router]);
 
   if (!ready) return null;
