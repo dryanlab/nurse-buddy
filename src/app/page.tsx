@@ -1,8 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Heart, Mic, MessageCircle, BookOpen, TrendingUp } from "lucide-react";
+import { isLoggedIn } from "@/lib/auth-store";
 
 const features = [
   { icon: Mic, title: "发音练习", desc: "AI 分析你的发音，给出精准反馈", color: "text-[#FF6B6B]" },
@@ -12,6 +15,14 @@ const features = [
 ];
 
 export default function LandingPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoggedIn()) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FFF8F5] to-[#FFF0EB]">
       {/* Hero */}
@@ -57,13 +68,20 @@ export default function LandingPage() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.5 }}
+          className="flex flex-col sm:flex-row gap-3 justify-center"
         >
           <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 bg-[#FF6B6B] text-white px-8 py-4 rounded-2xl text-lg font-semibold shadow-lg shadow-[#FF6B6B]/30 hover:bg-[#E55555] active:scale-95 transition-all"
+            href="/register"
+            className="inline-flex items-center justify-center gap-2 bg-[#FF6B6B] text-white px-8 py-4 rounded-2xl text-lg font-semibold shadow-lg shadow-[#FF6B6B]/30 hover:bg-[#E55555] active:scale-95 transition-all"
           >
             <Heart className="w-5 h-5" />
-            开始学习
+            Sign Up · 注册
+          </Link>
+          <Link
+            href="/login"
+            className="inline-flex items-center justify-center gap-2 bg-white text-[#FF6B6B] px-8 py-4 rounded-2xl text-lg font-semibold border border-[#FF6B6B]/30 hover:bg-[#FFF0EE] active:scale-95 transition-all"
+          >
+            Login · 登录
           </Link>
         </motion.div>
       </div>
