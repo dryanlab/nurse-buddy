@@ -4,6 +4,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { ArrowLeft, Mic, MicOff, Keyboard, Send, Shuffle, RotateCcw, ChevronDown, ChevronUp, Check, AlertTriangle } from "lucide-react";
 import { conversationScenarios, categories, difficulties, ConversationScenario } from "@/data/conversation-scenarios";
 import { speak } from "@/lib/speech";
+import { incrementDailyGoal } from "@/lib/daily-goals";
+import { recordScenario } from "@/lib/progress-store";
 
 // ── Types ──
 
@@ -259,6 +261,11 @@ export default function ConversationPage() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setReview(data);
+      // Track conversation completion
+      incrementDailyGoal("conversationDone");
+      if (scenario) {
+        recordScenario(scenario.id, data.overallScore);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Review failed");
     }

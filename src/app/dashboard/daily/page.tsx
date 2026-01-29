@@ -7,6 +7,7 @@ import { allVocabulary, type VocabWord } from "@/data/vocabulary";
 import { allPhrases, type MedicalPhrase } from "@/data/phrases";
 import { saveProgress, getProgress } from "@/lib/progress-store";
 import { earnCoins } from "@/lib/coin-store";
+import { updateDailyGoal } from "@/lib/daily-goals";
 
 interface DailyQuestion {
   type: "vocab" | "fill-blank" | "pronunciation" | "phrase";
@@ -160,6 +161,8 @@ export default function DailyChallengePage() {
         saveProgress({ xp: getProgress().xp + xpEarned });
         earnCoins(coinsEarned, "daily-challenge");
       } catch {}
+      // Track daily challenge completion
+      updateDailyGoal("dailyChallengeDone", true);
       setRewarded(true);
     }
   }, [finished, rewarded, score]);

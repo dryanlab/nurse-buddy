@@ -7,6 +7,7 @@ import { vocabulary, vocabCategories, type VocabWord } from "@/data/vocabulary";
 import { speak } from "@/lib/speech";
 import { getProgress, toggleVocabMastered } from "@/lib/progress-store";
 import { addCard, hasCard } from "@/lib/srs-engine";
+import { incrementDailyGoal } from "@/lib/daily-goals";
 
 export default function VocabularyPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -62,7 +63,13 @@ export default function VocabularyPage() {
     }
   }, [word]);
 
-  const handleFlip = () => setIsFlipped(!isFlipped);
+  const handleFlip = () => {
+    if (!isFlipped) {
+      // Track vocab review when card is flipped to see definition
+      incrementDailyGoal("vocabReviewed");
+    }
+    setIsFlipped(!isFlipped);
+  };
 
   const handleMastered = () => {
     if (!word) return;

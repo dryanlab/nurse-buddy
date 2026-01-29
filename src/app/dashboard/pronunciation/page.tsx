@@ -6,6 +6,7 @@ import { Mic, Volume2, RotateCcw, ChevronRight, ChevronLeft, Lightbulb, Loader2,
 import { pronunciationItems, CATEGORIES, type PronunciationItem } from "@/data/pronunciation-words";
 import { speak, startListening, compareTexts } from "@/lib/speech";
 import { recordPronunciation } from "@/lib/progress-store";
+import { incrementDailyGoal } from "@/lib/daily-goals";
 
 type PracticeState = "idle" | "listening" | "evaluating" | "result";
 type DifficultyFilter = "all" | "easy" | "medium" | "hard";
@@ -63,6 +64,7 @@ export default function PronunciationPage() {
       setScore(comparison.score);
       setMatchedWords(comparison.targetWords);
       recordPronunciation(comparison.score);
+      incrementDailyGoal("pronunciationDone");
 
       setLoadingFeedback(true);
       try {

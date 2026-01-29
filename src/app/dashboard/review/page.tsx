@@ -22,6 +22,7 @@ import {
   type ReviewQuality,
 } from "@/lib/srs-engine";
 import { earnCoins, COIN_RATES } from "@/lib/coin-store";
+import { updateDailyGoal } from "@/lib/daily-goals";
 
 type ViewState = "summary" | "review" | "done" | "stats";
 
@@ -131,6 +132,8 @@ export default function ReviewPage() {
       // Award XP/coins
       earnCoins(15, "daily-review");
       if (session.streak >= 7) earnCoins(10, "review-streak-bonus");
+      // Track SRS completion for daily goals
+      updateDailyGoal("srsReviewDone", true);
       setView("done");
       return;
     }
