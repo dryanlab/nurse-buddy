@@ -137,13 +137,71 @@ class OpenAIProvider implements AIProvider {
   }
 }
 
+// ── Fallback wrapper ──
+
+class FallbackProvider implements AIProvider {
+  name = "fallback";
+  model: string;
+  private providers: AIProvider[];
+
+  constructor(providers: AIProvider[]) {
+    this.providers = providers;
+    this.model = providers[0]?.model || "unknown";
+  }
+
+  async *streamChat(systemPrompt: string, messages: ChatMessage[]): AsyncIterable<string> {
+    for (const provider of this.providers) {
+      try {
+        for await (const chunk of provider.streamChat(systemPrompt, messages)) {
+          yield chunk;
+        }
+        return; // success
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "";
+        if (msg.includes("429") || msg.includes("quota") || msg.includes("Too Many")) {
+          console.warn(`[${provider.name}/${provider.model}] rate limited, trying next...`);
+          continue;
+        }
+        throw e; // non-rate-limit error, don't retry
+      }
+    }
+    throw new Error("All AI providers exhausted");
+  }
+
+  async generateText(systemPrompt: string, userMessage: string): Promise<string> {
+    for (const provider of this.providers) {
+      try {
+        return await provider.generateText(systemPrompt, userMessage);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "";
+        if (msg.includes("429") || msg.includes("quota") || msg.includes("Too Many")) {
+          console.warn(`[${provider.name}/${provider.model}] rate limited, trying next...`);
+          continue;
+        }
+        throw e;
+      }
+    }
+    throw new Error("All AI providers exhausted");
+  }
+}
+
 // ── Factory ──
 
 export function getProvider(): AIProvider | null {
   const googleKey = process.env.GOOGLE_AI_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
 
-  if (googleKey) return new GeminiProvider(googleKey);
-  if (openaiKey) return new OpenAIProvider(openaiKey);
-  return null;
+  const providers: AIProvider[] = [];
+
+  if (googleKey) {
+    providers.push(new GeminiProvider(googleKey, "gemini-2.5-flash"));
+    providers.push(new GeminiProvider(googleKey, "gemini-2.0-flash-lite"));
+  }
+  if (openaiKey) {
+    providers.push(new OpenAIProvider(openaiKey));
+  }
+
+  if (providers.length === 0) return null;
+  if (providers.length === 1) return providers[0];
+  return new FallbackProvider(providers);
 }
