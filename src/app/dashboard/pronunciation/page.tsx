@@ -1,0 +1,275 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mic, Volume2, RotateCcw, ChevronRight, ChevronLeft, Lightbulb, Loader2 } from "lucide-react";
+import { pronunciationItems, type PronunciationItem } from "@/data/pronunciation-words";
+import { speak, startListening, compareTexts } from "@/lib/speech";
+import { recordPronunciation } from "@/lib/progress-store";
+
+type PracticeState = "idle" | "listening" | "evaluating" | "result";
+
+export default function PronunciationPage() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [state, setState] = useState<PracticeState>("idle");
+  const [spokenText, setSpokenText] = useState("");
+  const [score, setScore] = useState(0);
+  const [matchedWords, setMatchedWords] = useState<{ word: string; matched: boolean }[]>([]);
+  const [error, setError] = useState("");
+  const [aiFeedback, setAiFeedback] = useState("");
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
+
+  const item: PronunciationItem = pronunciationItems[currentIndex];
+
+  const handleSpeak = useCallback(async (rate = 1) => {
+    try {
+      await speak(item.word, rate);
+    } catch {
+      setError("语音播放失败，请检查浏览器设置");
+    }
+  }, [item.word]);
+
+  const handleListen = useCallback(async () => {
+    setState("listening");
+    setError("");
+    setAiFeedback("");
+
+    try {
+      const result = await startListening();
+      setState("evaluating");
+      setSpokenText(result.transcript);
+
+      const comparison = compareTexts(item.word, result.transcript);
+      setScore(comparison.score);
+      setMatchedWords(comparison.targetWords);
+      recordPronunciation(comparison.score);
+
+      // Get AI feedback
+      setLoadingFeedback(true);
+      try {
+        const res = await fetch("/api/pronunciation-feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            target: item.word,
+            spoken: result.transcript,
+            score: comparison.score,
+            tip: item.tip,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setAiFeedback(data.feedback);
+        }
+      } catch {
+        // AI feedback is optional
+      } finally {
+        setLoadingFeedback(false);
+      }
+
+      setState("result");
+    } catch (err) {
+      setState("idle");
+      setError(err instanceof Error ? err.message : "识别失败");
+    }
+  }, [item]);
+
+  const handleNext = () => {
+    setCurrentIndex((i) => (i + 1) % pronunciationItems.length);
+    resetState();
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((i) => (i - 1 + pronunciationItems.length) % pronunciationItems.length);
+    resetState();
+  };
+
+  const resetState = () => {
+    setState("idle");
+    setSpokenText("");
+    setScore(0);
+    setMatchedWords([]);
+    setError("");
+    setAiFeedback("");
+  };
+
+  const scoreColor = score >= 80 ? "text-[#6BCB9E]" : score >= 50 ? "text-[#F4A261]" : "text-[#FF6B6B]";
+  const scoreEmoji = score >= 80 ? "🎉" : score >= 50 ? "👍" : "💪";
+
+  return (
+    <div className="px-5 pt-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-xl font-bold text-[#2D2D2D]">发音练习</h1>
+        <span className="text-xs text-[#9CA3AF] bg-white px-3 py-1 rounded-full border border-[#F3E8E2]">
+          {currentIndex + 1} / {pronunciationItems.length}
+        </span>
+      </div>
+
+      {/* Category Badge */}
+      <div className="mb-4">
+        <span className="text-xs bg-[#FFF0EE] text-[#FF6B6B] px-3 py-1 rounded-full font-medium">
+          {item.category}
+        </span>
+        <span className={`text-xs ml-2 px-3 py-1 rounded-full font-medium ${
+          item.difficulty === "easy" ? "bg-[#EEFBF4] text-[#6BCB9E]" :
+          item.difficulty === "medium" ? "bg-[#FFF5EB] text-[#F4A261]" :
+          "bg-[#FFF0EE] text-[#FF6B6B]"
+        }`}>
+          {item.difficulty === "easy" ? "简单" : item.difficulty === "medium" ? "中等" : "困难"}
+        </span>
+      </div>
+
+      {/* Main Card */}
+      <motion.div
+        key={item.id}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="bg-white rounded-3xl p-6 shadow-sm border border-[#F3E8E2]"
+      >
+        {/* Word Display */}
+        <div className="text-center mb-6">
+          <h2 className="text-3xl font-bold text-[#2D2D2D] mb-2">{item.word}</h2>
+          <p className="text-lg text-[#9CA3AF] font-mono">{item.phonetic}</p>
+          <p className="text-sm text-[#6B7280] mt-1">{item.chinese}</p>
+        </div>
+
+        {/* Listen Buttons */}
+        <div className="flex justify-center gap-3 mb-6">
+          <button
+            onClick={() => handleSpeak(1)}
+            className="flex items-center gap-2 bg-[#EEFBF4] text-[#6BCB9E] px-4 py-2.5 rounded-xl text-sm font-medium active:scale-95 transition-transform"
+          >
+            <Volume2 className="w-4 h-4" /> 听发音
+          </button>
+          <button
+            onClick={() => handleSpeak(0.2)}
+            className="flex items-center gap-2 bg-[#FFF5EB] text-[#F4A261] px-4 py-2.5 rounded-xl text-sm font-medium active:scale-95 transition-transform"
+          >
+            🐢 慢速
+          </button>
+        </div>
+
+        {/* Record Button */}
+        <div className="flex justify-center mb-6">
+          <button
+            onClick={state === "idle" || state === "result" ? handleListen : undefined}
+            disabled={state === "listening" || state === "evaluating"}
+            className={`relative w-20 h-20 rounded-full flex items-center justify-center transition-all active:scale-90 ${
+              state === "listening"
+                ? "bg-[#FF6B6B] shadow-lg shadow-[#FF6B6B]/40"
+                : "bg-[#FF6B6B] shadow-md shadow-[#FF6B6B]/30 hover:shadow-lg"
+            }`}
+          >
+            {state === "listening" && (
+              <span className="absolute inset-0 rounded-full bg-[#FF6B6B] pulse-ring" />
+            )}
+            {state === "evaluating" ? (
+              <Loader2 className="w-8 h-8 text-white animate-spin" />
+            ) : (
+              <Mic className="w-8 h-8 text-white relative z-10" />
+            )}
+          </button>
+        </div>
+        <p className="text-center text-xs text-[#9CA3AF] mb-4">
+          {state === "listening" ? "正在听你说..." : state === "evaluating" ? "正在评估..." : "点击麦克风开始跟读"}
+        </p>
+
+        {/* Error */}
+        {error && (
+          <div className="bg-[#FFF0EE] text-[#FF6B6B] text-sm p-3 rounded-xl mb-4 text-center">
+            {error}
+          </div>
+        )}
+
+        {/* Result */}
+        <AnimatePresence>
+          {state === "result" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-4"
+            >
+              {/* Score */}
+              <div className="text-center">
+                <span className="text-4xl mr-2">{scoreEmoji}</span>
+                <span className={`text-4xl font-bold ${scoreColor}`}>{score}</span>
+                <span className="text-lg text-[#9CA3AF]">/100</span>
+              </div>
+
+              {/* Comparison */}
+              <div className="bg-[#FFF8F5] rounded-xl p-4">
+                <div className="text-xs text-[#9CA3AF] mb-2">你说的：</div>
+                <div className="text-sm font-medium text-[#2D2D2D] mb-3">
+                  &quot;{spokenText}&quot;
+                </div>
+                <div className="text-xs text-[#9CA3AF] mb-2">目标：</div>
+                <div className="flex flex-wrap gap-1">
+                  {matchedWords.map((w, i) => (
+                    <span
+                      key={i}
+                      className={`text-sm font-medium px-1.5 py-0.5 rounded ${
+                        w.matched
+                          ? "bg-[#EEFBF4] text-[#6BCB9E]"
+                          : "bg-[#FFF0EE] text-[#FF6B6B]"
+                      }`}
+                    >
+                      {w.word}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* AI Feedback */}
+              {(loadingFeedback || aiFeedback) && (
+                <div className="bg-[#F0F4FF] rounded-xl p-4">
+                  <div className="flex items-center gap-2 text-xs text-[#7C83FD] font-medium mb-2">
+                    <Lightbulb className="w-3.5 h-3.5" /> AI 发音建议
+                  </div>
+                  {loadingFeedback ? (
+                    <div className="flex items-center gap-2 text-xs text-[#9CA3AF]">
+                      <Loader2 className="w-3 h-3 animate-spin" /> 正在分析...
+                    </div>
+                  ) : (
+                    <p className="text-sm text-[#4B5563] leading-relaxed whitespace-pre-wrap">{aiFeedback}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Tip */}
+              <div className="bg-[#FFF5EB] rounded-xl p-4">
+                <div className="text-xs text-[#F4A261] font-medium mb-1">💡 发音技巧</div>
+                <p className="text-sm text-[#6B7280] leading-relaxed">{item.tip}</p>
+              </div>
+
+              {/* Retry */}
+              <button
+                onClick={resetState}
+                className="w-full flex items-center justify-center gap-2 bg-white border border-[#F3E8E2] text-[#6B7280] py-3 rounded-xl text-sm font-medium active:scale-95 transition-transform"
+              >
+                <RotateCcw className="w-4 h-4" /> 再试一次
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      {/* Navigation */}
+      <div className="flex justify-between mt-6 mb-8">
+        <button
+          onClick={handlePrev}
+          className="flex items-center gap-1 text-sm text-[#9CA3AF] active:text-[#6B7280]"
+        >
+          <ChevronLeft className="w-4 h-4" /> 上一个
+        </button>
+        <button
+          onClick={handleNext}
+          className="flex items-center gap-1 text-sm text-[#FF6B6B] font-medium active:text-[#E55555]"
+        >
+          下一个 <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}

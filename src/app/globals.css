@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  --coral: #FF6B6B;
+  --coral-light: #FF8E8E;
+  --coral-dark: #E55555;
+  --mint: #6BCB9E;
+  --mint-light: #8ED8B5;
+  --mint-dark: #4FB584;
+  --warm-bg: #FFF8F5;
+  --warm-card: #FFFFFF;
+  --warm-text: #2D2D2D;
+  --warm-text-secondary: #6B7280;
+  --warm-border: #F3E8E2;
+}
+
+body {
+  background: var(--warm-bg);
+  color: var(--warm-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--warm-border); border-radius: 3px; }
+
+/* Speech recognition pulse animation */
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+.pulse-ring {
+  animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+/* Flip card */
+.flip-card { perspective: 1000px; }
+.flip-card-inner {
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+.flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+.flip-card-front, .flip-card-back {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-card-back { transform: rotateY(180deg); }
