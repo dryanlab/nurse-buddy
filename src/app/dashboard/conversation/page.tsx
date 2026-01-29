@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ArrowLeft, Mic, MicOff, Keyboard, Send, Shuffle, RotateCcw, ChevronDown, ChevronUp, Check, AlertTriangle } from "lucide-react";
-import { conversationScenarios, categories, difficulties, ConversationScenario } from "@/data/conversation-scenarios";
+import { allConversationScenarios as conversationScenarios, categories, difficulties, ConversationScenario } from "@/data/conversation-scenarios";
 import { speak } from "@/lib/speech";
 import { incrementDailyGoal } from "@/lib/daily-goals";
 import { recordScenario } from "@/lib/progress-store";

@@ -9,6 +9,10 @@ import { nursingVocab } from "./nursing";
 import { emergencyVocab } from "./emergency";
 import { labVocab } from "./lab";
 import { mentalVocab } from "./mental";
+import { anatomyVocab } from "./anatomy";
+import { pharmacyVocab } from "./pharmacy";
+import { additional1Vocab } from "./additional1";
+import { additional2Vocab } from "./additional2";
 
 export const additionalVocabulary: VocabWord[] = [
   ...bodyVocab,
@@ -21,4 +25,8 @@ export const additionalVocabulary: VocabWord[] = [
   ...emergencyVocab,
   ...labVocab,
   ...mentalVocab,
+  ...anatomyVocab,
+  ...pharmacyVocab,
+  ...additional1Vocab,
+  ...additional2Vocab,
 ];

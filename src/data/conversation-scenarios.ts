@@ -366,6 +366,21 @@ export const conversationScenarios: ConversationScenario[] = [
   },
 ];
 
+import { nursingSchoolScenarios } from "./scenarios/nursing-school";
+import { emergencyRoomScenarios } from "./scenarios/emergency-room";
+import { surgeryScenarios } from "./scenarios/surgery";
+import { dailyHospitalScenarios } from "./scenarios/daily-hospital";
+import { urgentScenarios } from "./scenarios/urgent";
+
+export const allConversationScenarios: ConversationScenario[] = [
+  ...conversationScenarios,
+  ...nursingSchoolScenarios,
+  ...emergencyRoomScenarios,
+  ...surgeryScenarios,
+  ...dailyHospitalScenarios,
+  ...urgentScenarios,
+];
+
 export const categories = [
   { id: "all", label: "All", labelZh: "全部" },
   { id: "clinic", label: "Clinic", labelZh: "门诊" },
@@ -373,6 +388,10 @@ export const categories = [
   { id: "emergency", label: "Emergency", labelZh: "急诊" },
   { id: "pharmacy", label: "Pharmacy", labelZh: "药房" },
   { id: "phone", label: "Phone", labelZh: "电话" },
+  { id: "nursing-school", label: "Nursing School", labelZh: "护校" },
+  { id: "surgery", label: "Surgery", labelZh: "外科" },
+  { id: "daily-hospital", label: "Daily Hospital", labelZh: "日常" },
+  { id: "urgent", label: "Urgent", labelZh: "紧急" },
 ];
 
 export const difficulties = [
