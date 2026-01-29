@@ -432,7 +432,7 @@ export const ipaSymbols: IPASymbol[] = [
     tip: "/w/ 就像亲嘴的起始动作：嘴唇噘圆再打开。不要咬嘴唇，那是 /v/！",
   },
   {
-    id: "c-j",
+    id: "c-y",
     symbol: "/j/",
     type: "consonant",
     name: "palatal approximant",

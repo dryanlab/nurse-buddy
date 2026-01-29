@@ -29,6 +29,7 @@ export const CATEGORIES = [
   "吞音 Elision",
   "语调 Intonation",
   "句子重音 Sentence Stress",
+  "音标教学",
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number];
