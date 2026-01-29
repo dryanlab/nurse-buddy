@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, Volume2, RotateCcw, ChevronRight, ChevronLeft, Lightbulb, Loader2 } from "lucide-react";
-import { pronunciationItems, type PronunciationItem } from "@/data/pronunciation-words";
+import { Mic, Volume2, RotateCcw, ChevronRight, ChevronLeft, Lightbulb, Loader2, Shuffle, Filter } from "lucide-react";
+import { pronunciationItems, CATEGORIES, type PronunciationItem } from "@/data/pronunciation-words";
 import { speak, startListening, compareTexts } from "@/lib/speech";
 import { recordPronunciation } from "@/lib/progress-store";
 
 type PracticeState = "idle" | "listening" | "evaluating" | "result";
+type DifficultyFilter = "all" | "easy" | "medium" | "hard";
 
 export default function PronunciationPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -18,18 +19,34 @@ export default function PronunciationPage() {
   const [error, setError] = useState("");
   const [aiFeedback, setAiFeedback] = useState("");
   const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [showFilters, setShowFilters] = useState(false);
+  const [randomMode, setRandomMode] = useState(false);
+  const [showTip, setShowTip] = useState(false);
 
-  const item: PronunciationItem = pronunciationItems[currentIndex];
+  const filteredItems = useMemo(() => {
+    return pronunciationItems.filter((item) => {
+      if (difficultyFilter !== "all" && item.difficulty !== difficultyFilter) return false;
+      if (categoryFilter !== "all" && item.category !== categoryFilter) return false;
+      return true;
+    });
+  }, [difficultyFilter, categoryFilter]);
+
+  const safeIndex = Math.min(currentIndex, Math.max(0, filteredItems.length - 1));
+  const item: PronunciationItem | undefined = filteredItems[safeIndex];
 
   const handleSpeak = useCallback(async (rate = 1) => {
+    if (!item) return;
     try {
       await speak(item.word, rate);
     } catch {
       setError("语音播放失败，请检查浏览器设置");
     }
-  }, [item.word]);
+  }, [item]);
 
   const handleListen = useCallback(async () => {
+    if (!item) return;
     setState("listening");
     setError("");
     setAiFeedback("");
@@ -44,7 +61,6 @@ export default function PronunciationPage() {
       setMatchedWords(comparison.targetWords);
       recordPronunciation(comparison.score);
 
-      // Get AI feedback
       setLoadingFeedback(true);
       try {
         const res = await fetch("/api/pronunciation-feedback", {
@@ -74,16 +90,6 @@ export default function PronunciationPage() {
     }
   }, [item]);
 
-  const handleNext = () => {
-    setCurrentIndex((i) => (i + 1) % pronunciationItems.length);
-    resetState();
-  };
-
-  const handlePrev = () => {
-    setCurrentIndex((i) => (i - 1 + pronunciationItems.length) % pronunciationItems.length);
-    resetState();
-  };
-
   const resetState = () => {
     setState("idle");
     setSpokenText("");
@@ -91,20 +97,164 @@ export default function PronunciationPage() {
     setMatchedWords([]);
     setError("");
     setAiFeedback("");
+    setShowTip(false);
+  };
+
+  const handleNext = () => {
+    if (randomMode) {
+      const newIndex = Math.floor(Math.random() * filteredItems.length);
+      setCurrentIndex(newIndex);
+    } else {
+      setCurrentIndex((i) => (i + 1) % filteredItems.length);
+    }
+    resetState();
+  };
+
+  const handlePrev = () => {
+    if (randomMode) {
+      const newIndex = Math.floor(Math.random() * filteredItems.length);
+      setCurrentIndex(newIndex);
+    } else {
+      setCurrentIndex((i) => (i - 1 + filteredItems.length) % filteredItems.length);
+    }
+    resetState();
+  };
+
+  const handleRandom = () => {
+    const newIndex = Math.floor(Math.random() * filteredItems.length);
+    setCurrentIndex(newIndex);
+    resetState();
   };
 
   const scoreColor = score >= 80 ? "text-[#6BCB9E]" : score >= 50 ? "text-[#F4A261]" : "text-[#FF6B6B]";
   const scoreEmoji = score >= 80 ? "🎉" : score >= 50 ? "👍" : "💪";
 
+  const difficultyLabels: Record<DifficultyFilter, string> = { all: "全部", easy: "简单", medium: "中等", hard: "困难" };
+  const difficultyColors: Record<DifficultyFilter, string> = {
+    all: "bg-[#F3F4F6] text-[#6B7280]",
+    easy: "bg-[#EEFBF4] text-[#6BCB9E]",
+    medium: "bg-[#FFF5EB] text-[#F4A261]",
+    hard: "bg-[#FFF0EE] text-[#FF6B6B]",
+  };
+
+  // Stats
+  const easyCount = filteredItems.filter(i => i.difficulty === "easy").length;
+  const medCount = filteredItems.filter(i => i.difficulty === "medium").length;
+  const hardCount = filteredItems.filter(i => i.difficulty === "hard").length;
+
+  if (!item) {
+    return (
+      <div className="px-5 pt-6 text-center">
+        <h1 className="text-xl font-bold text-[#2D2D2D] mb-4">发音练习</h1>
+        <p className="text-[#9CA3AF]">没有匹配的练习项目，请调整筛选条件。</p>
+        <button onClick={() => { setDifficultyFilter("all"); setCategoryFilter("all"); }} className="mt-4 text-[#FF6B6B] font-medium">重置筛选</button>
+      </div>
+    );
+  }
+
   return (
     <div className="px-5 pt-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold text-[#2D2D2D]">发音练习</h1>
-        <span className="text-xs text-[#9CA3AF] bg-white px-3 py-1 rounded-full border border-[#F3E8E2]">
-          {currentIndex + 1} / {pronunciationItems.length}
-        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setRandomMode(!randomMode); }}
+            className={`p-2 rounded-xl transition-colors ${randomMode ? "bg-[#FF6B6B] text-white" : "bg-white text-[#9CA3AF] border border-[#F3E8E2]"}`}
+            title={randomMode ? "随机模式开启" : "随机模式关闭"}
+          >
+            <Shuffle className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`p-2 rounded-xl transition-colors ${showFilters ? "bg-[#7C83FD] text-white" : "bg-white text-[#9CA3AF] border border-[#F3E8E2]"}`}
+          >
+            <Filter className="w-4 h-4" />
+          </button>
+        </div>
       </div>
+
+      {/* Stats Bar */}
+      <div className="flex items-center gap-2 mb-4 text-xs">
+        <span className="bg-white px-3 py-1 rounded-full border border-[#F3E8E2] text-[#9CA3AF]">
+          {randomMode ? "🎲 随机" : `${safeIndex + 1} / ${filteredItems.length}`}
+        </span>
+        <span className="text-[#9CA3AF]">
+          共 {filteredItems.length} 词
+        </span>
+        <span className="text-[#6BCB9E]">简{easyCount}</span>
+        <span className="text-[#F4A261]">中{medCount}</span>
+        <span className="text-[#FF6B6B]">难{hardCount}</span>
+      </div>
+
+      {/* Filters */}
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden mb-4"
+          >
+            <div className="bg-white rounded-2xl p-4 border border-[#F3E8E2] space-y-3">
+              {/* Difficulty */}
+              <div>
+                <div className="text-xs text-[#9CA3AF] mb-2 font-medium">难度</div>
+                <div className="flex flex-wrap gap-2">
+                  {(["all", "easy", "medium", "hard"] as DifficultyFilter[]).map((d) => (
+                    <button
+                      key={d}
+                      onClick={() => { setDifficultyFilter(d); setCurrentIndex(0); resetState(); }}
+                      className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
+                        difficultyFilter === d
+                          ? difficultyColors[d] + " ring-2 ring-offset-1 ring-current"
+                          : "bg-[#F9FAFB] text-[#9CA3AF]"
+                      }`}
+                    >
+                      {difficultyLabels[d]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Category */}
+              <div>
+                <div className="text-xs text-[#9CA3AF] mb-2 font-medium">分类</div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => { setCategoryFilter("all"); setCurrentIndex(0); resetState(); }}
+                    className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
+                      categoryFilter === "all"
+                        ? "bg-[#F3E8E2] text-[#2D2D2D] ring-2 ring-offset-1 ring-[#F3E8E2]"
+                        : "bg-[#F9FAFB] text-[#9CA3AF]"
+                    }`}
+                  >
+                    全部
+                  </button>
+                  {CATEGORIES.map((cat) => {
+                    const count = pronunciationItems.filter(
+                      (i) => i.category === cat && (difficultyFilter === "all" || i.difficulty === difficultyFilter)
+                    ).length;
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => { setCategoryFilter(cat); setCurrentIndex(0); resetState(); }}
+                        className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
+                          categoryFilter === cat
+                            ? "bg-[#FFF0EE] text-[#FF6B6B] ring-2 ring-offset-1 ring-[#FF6B6B]"
+                            : "bg-[#F9FAFB] text-[#9CA3AF]"
+                        }`}
+                      >
+                        {cat} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Category Badge */}
       <div className="mb-4">
@@ -130,8 +280,20 @@ export default function PronunciationPage() {
         {/* Word Display */}
         <div className="text-center mb-6">
           <h2 className="text-3xl font-bold text-[#2D2D2D] mb-2">{item.word}</h2>
-          <p className="text-lg text-[#9CA3AF] font-mono">{item.phonetic}</p>
-          <p className="text-sm text-[#6B7280] mt-1">{item.chinese}</p>
+          {/* In random mode, hide phonetic until revealed */}
+          {randomMode && !showTip && state !== "result" ? (
+            <button
+              onClick={() => setShowTip(true)}
+              className="text-sm text-[#7C83FD] underline"
+            >
+              点击显示音标和提示
+            </button>
+          ) : (
+            <>
+              <p className="text-lg text-[#9CA3AF] font-mono">{item.phonetic}</p>
+              <p className="text-sm text-[#6B7280] mt-1">{item.chinese}</p>
+            </>
+          )}
         </div>
 
         {/* Listen Buttons */}
@@ -148,6 +310,14 @@ export default function PronunciationPage() {
           >
             🐢 慢速
           </button>
+          {randomMode && (
+            <button
+              onClick={handleRandom}
+              className="flex items-center gap-2 bg-[#F0F4FF] text-[#7C83FD] px-4 py-2.5 rounded-xl text-sm font-medium active:scale-95 transition-transform"
+            >
+              <Shuffle className="w-4 h-4" /> 随机
+            </button>
+          )}
         </div>
 
         {/* Record Button */}
@@ -261,13 +431,13 @@ export default function PronunciationPage() {
           onClick={handlePrev}
           className="flex items-center gap-1 text-sm text-[#9CA3AF] active:text-[#6B7280]"
         >
-          <ChevronLeft className="w-4 h-4" /> 上一个
+          <ChevronLeft className="w-4 h-4" /> {randomMode ? "随机上一个" : "上一个"}
         </button>
         <button
           onClick={handleNext}
           className="flex items-center gap-1 text-sm text-[#FF6B6B] font-medium active:text-[#E55555]"
         >
-          下一个 <ChevronRight className="w-4 h-4" />
+          {randomMode ? "随机下一个" : "下一个"} <ChevronRight className="w-4 h-4" />
         </button>
       </div>
     </div>
