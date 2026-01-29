@@ -13,7 +13,7 @@ import SkillAssessment from "@/components/skill-assessment";
 
 const quickActions = [
   { href: "/dashboard/pronunciation", icon: Mic, label: "练发音", desc: "跟读练习", color: "bg-[#FF6B6B]", lightColor: "bg-[#FFF0EE]" },
-  { href: "/dashboard/scenarios", icon: MessageCircle, label: "场景对话", desc: "角色扮演", color: "bg-[#6BCB9E]", lightColor: "bg-[#EEFBF4]" },
+  { href: "/dashboard/conversation", icon: MessageCircle, label: "场景对话", desc: "角色扮演", color: "bg-[#6BCB9E]", lightColor: "bg-[#EEFBF4]" },
   { href: "/dashboard/vocabulary", icon: BookOpen, label: "词汇卡片", desc: "200+ 词汇", color: "bg-[#F4A261]", lightColor: "bg-[#FFF5EB]" },
 ];
 
