@@ -11,6 +11,12 @@ Analyze this role-play conversation between a nursing student (playing: ${scenar
 Scenario: ${scenario.title} - ${scenario.context}
 Key vocabulary expected: ${scenario.keyVocabulary.join(", ")}
 
+IMPORTANT: The student's text comes from SPEECH RECOGNITION (spoken language converted to text). Therefore:
+- Do NOT penalize missing punctuation, capitalization, or formatting — these are artifacts of speech-to-text, not student errors
+- Focus ONLY on: grammar structure, word choice, vocabulary usage, sentence construction, medical terminology accuracy, and naturalness of expression
+- For "improved" versions, you may add punctuation for readability, but do NOT list missing punctuation as an "issue"
+- Evaluate as if you were listening to the student speak, not reading their writing
+
 Provide a detailed review in this EXACT JSON format (no markdown, just raw JSON):
 {
   "overallScore": 85,
@@ -23,17 +29,19 @@ Provide a detailed review in this EXACT JSON format (no markdown, just raw JSON)
     {
       "original": "what student said",
       "issues": [
-        { "type": "grammar", "detail": "explanation in Chinese", "suggestion": "better way to say it" }
+        { "type": "grammar|vocabulary|expression", "detail": "explanation in Chinese", "suggestion": "better way to say it" }
       ],
-      "improved": "corrected version"
+      "improved": "polished version (may add punctuation for readability but this is NOT an issue)"
     }
   ],
   "vocabularyUsed": ["medical terms student used correctly"],
-  "missedVocabulary": ["key terms they could have used"],
-  "tips": ["improvement tip in Chinese"]
+  "missedVocabulary": ["key terms they could have used but didn't"],
+  "tips": ["2-3 actionable improvement tips in Chinese, focused on spoken English skills"]
 }
 
-Be encouraging but honest. Score fairly based on the student's level. The pronunciationScore should be moderate since we're working from speech recognition transcripts. Provide 2-3 tips in Chinese.`;
+Issue types should ONLY be: "grammar" (sentence structure errors), "vocabulary" (wrong word choice or missing medical terms), "expression" (unnatural phrasing that a native speaker wouldn't say). Do NOT include punctuation or capitalization issues.
+
+Be encouraging but honest. Score fairly. If the student communicated effectively despite imperfect grammar, acknowledge that. Provide 2-3 tips in Chinese focused on improving spoken English skills.`;
 
   const transcript = messages
     .map((m: { role: string; content: string }) =>
