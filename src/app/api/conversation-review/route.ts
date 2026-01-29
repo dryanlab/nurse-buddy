@@ -70,13 +70,19 @@ Be encouraging but honest. Score fairly based on the student's level. The pronun
 
   try {
     const result = await provider.generateText(systemPrompt, transcript);
+    // Strip markdown code fences if present
+    const cleaned = result.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
     // Extract JSON from response
-    const jsonMatch = result.match(/\{[\s\S]*\}/);
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      return Response.json({ error: "Failed to parse review" }, { status: 500 });
+      return Response.json({ error: "Failed to parse review. Raw: " + cleaned.slice(0, 200) }, { status: 500 });
     }
-    const review = JSON.parse(jsonMatch[0]);
-    return Response.json(review);
+    try {
+      const review = JSON.parse(jsonMatch[0]);
+      return Response.json(review);
+    } catch {
+      return Response.json({ error: "JSON parse failed. Raw: " + jsonMatch[0].slice(0, 200) }, { status: 500 });
+    }
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Unknown error";
     return Response.json({ error: msg }, { status: 500 });

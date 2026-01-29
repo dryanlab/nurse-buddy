@@ -171,7 +171,7 @@ export default function ConversationPage() {
   const speakText = async (text: string) => {
     setIsSpeaking(true);
     try {
-      await speak(text, 0.8);
+      await speak(text, 0.5);
     } catch { /* ignore */ }
     setIsSpeaking(false);
   };
