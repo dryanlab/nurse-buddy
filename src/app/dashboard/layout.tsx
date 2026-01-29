@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Mic, MessageCircle, BookOpen, Settings, Home } from "lucide-react";
+import { Mic, MessageCircle, BookOpen, Settings, Home, Drama } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "首页" },
   { href: "/dashboard/pronunciation", icon: Mic, label: "发音" },
   { href: "/dashboard/scenarios", icon: MessageCircle, label: "对话" },
+  { href: "/dashboard/conversation", icon: Drama, label: "训练" },
   { href: "/dashboard/vocabulary", icon: BookOpen, label: "词汇" },
   { href: "/dashboard/settings", icon: Settings, label: "设置" },
 ];
