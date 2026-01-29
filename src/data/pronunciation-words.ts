@@ -1,3 +1,5 @@
+import { expandedPronunciationItems } from "./pronunciation/index";
+
 export interface PronunciationItem {
   id: string;
   word: string;
@@ -32,6 +34,7 @@ export const CATEGORIES = [
 export type Category = (typeof CATEGORIES)[number];
 
 export const pronunciationItems: PronunciationItem[] = [
+  ...expandedPronunciationItems,
   // ==================== 1. th 发音 (22 words) ====================
   { id: "th-think", word: "think", phonetic: "/θɪŋk/", chinese: "想，思考", difficulty: "medium", tip: "舌尖放在上下牙齿之间，轻轻送气。不要发成 /s/（sink）。中国学生最常见错误就是用 /s/ 代替 /θ/。", category: "th 发音", type: "word" },
   { id: "th-this", word: "this", phonetic: "/ðɪs/", chinese: "这个", difficulty: "medium", tip: "舌尖放在上下牙齿之间，声带振动。不要发成 /z/（zis）或 /d/（dis）。", category: "th 发音", type: "word" },
