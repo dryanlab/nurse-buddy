@@ -5,7 +5,6 @@ import { getSupabase, isSupabaseConfigured } from "./supabase";
 export interface UserProfile {
   id?: string;
   name: string;
-  grade: string;
   avatar: string;
   skillLevel?: string;
   createdAt: string;
@@ -48,13 +47,12 @@ export async function signUp(
   email: string,
   password: string,
   name: string,
-  grade: string,
   avatar: string
 ): Promise<{ error?: string }> {
   const supabase = getSupabase();
 
   if (!supabase) {
-    const profile: UserProfile = { name, grade, avatar, createdAt: new Date().toISOString() };
+    const profile: UserProfile = { name, avatar, createdAt: new Date().toISOString() };
     saveLocalUser(profile);
     return {};
   }
@@ -68,14 +66,13 @@ export async function signUp(
   const { error: profileErr } = await supabase.from("profiles").insert({
     id: userId,
     name,
-    grade,
     avatar,
   });
   if (profileErr) return { error: profileErr.message };
 
   await supabase.from("user_stats").insert({ user_id: userId });
 
-  saveLocalUser({ id: userId, name, grade, avatar, createdAt: new Date().toISOString() });
+  saveLocalUser({ id: userId, name, avatar, createdAt: new Date().toISOString() });
   return {};
 }
 
@@ -111,7 +108,6 @@ export async function ensureProfile(): Promise<{ hasProfile: boolean; needsSetup
     saveLocalUser({
       id: profile.id,
       name: profile.name,
-      grade: profile.grade,
       avatar: profile.avatar,
       createdAt: profile.created_at,
     });
@@ -122,7 +118,6 @@ export async function ensureProfile(): Promise<{ hasProfile: boolean; needsSetup
 }
 
 export async function completeGoogleProfile(
-  grade: string,
   avatar: string
 ): Promise<{ error?: string }> {
   const supabase = getSupabase();
@@ -137,14 +132,13 @@ export async function completeGoogleProfile(
   const { error: profileErr } = await supabase.from("profiles").insert({
     id: user.id,
     name,
-    grade,
     avatar,
   });
   if (profileErr) return { error: profileErr.message };
 
   await supabase.from("user_stats").insert({ user_id: user.id });
 
-  saveLocalUser({ id: user.id, name, grade, avatar, createdAt: new Date().toISOString() });
+  saveLocalUser({ id: user.id, name, avatar, createdAt: new Date().toISOString() });
   return {};
 }
 
@@ -174,7 +168,6 @@ export async function signIn(
     saveLocalUser({
       id: profile.id,
       name: profile.name,
-      grade: profile.grade,
       avatar: profile.avatar,
       createdAt: profile.created_at,
     });
@@ -207,7 +200,6 @@ export async function getSessionUser(): Promise<UserProfile | null> {
     const u: UserProfile = {
       id: profile.id,
       name: profile.name,
-      grade: profile.grade,
       avatar: profile.avatar,
       createdAt: profile.created_at,
     };
@@ -217,8 +209,8 @@ export async function getSessionUser(): Promise<UserProfile | null> {
   return null;
 }
 
-export function registerUser(name: string, grade: string, avatar: string): UserProfile {
-  const profile: UserProfile = { name, grade, avatar, createdAt: new Date().toISOString() };
+export function registerUser(name: string, avatar: string): UserProfile {
+  const profile: UserProfile = { name, avatar, createdAt: new Date().toISOString() };
   saveLocalUser(profile);
   return profile;
 }

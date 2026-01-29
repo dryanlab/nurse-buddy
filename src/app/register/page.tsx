@@ -8,23 +8,12 @@ import { getUser, registerUser, signUp, getAvatarOptions } from "@/lib/auth-stor
 import { isSupabaseConfigured } from "@/lib/supabase";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 
-const GRADES = [
-  { value: "4", label: "Grade 4" },
-  { value: "5", label: "Grade 5" },
-  { value: "6", label: "Grade 6" },
-  { value: "7", label: "Grade 7" },
-  { value: "8", label: "Grade 8" },
-  { value: "9", label: "Grade 9" },
-  { value: "10", label: "Grade 10" },
-];
-
 export default function RegisterPage() {
   const router = useRouter();
   const avatars = getAvatarOptions();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [grade, setGrade] = useState("6");
   const [avatar, setAvatar] = useState(avatars[0]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,10 +37,10 @@ export default function RegisterPage() {
     setError("");
     try {
       if (isSupabaseConfigured) {
-        const { error: err } = await signUp(email, password, trimmed, grade, avatar);
+        const { error: err } = await signUp(email, password, trimmed, avatar);
         if (err) { setError(err); return; }
       } else {
-        registerUser(trimmed, grade, avatar);
+        registerUser(trimmed, avatar);
       }
       router.push("/dashboard");
     } finally {
@@ -139,30 +128,6 @@ export default function RegisterPage() {
             </>
           )}
 
-          {/* Grade */}
-          <div>
-            <label className="block text-sm font-medium text-[#6B7280] mb-2">
-              Grade Level <span className="text-[#9CA3AF] text-xs">年级</span>
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {GRADES.map((g) => (
-                <motion.button
-                  key={g.value}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setGrade(g.value)}
-                  className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                    grade === g.value
-                      ? "bg-[#FF6B6B]/10 border border-[#FF6B6B]/50 text-[#FF6B6B]"
-                      : "bg-[#FFF8F5] border border-[#F3E8E2] text-[#9CA3AF] hover:border-[#FF6B6B]/30"
-                  }`}
-                >
-                  {g.label}
-                </motion.button>
-              ))}
-            </div>
-          </div>
-
           {/* Avatar */}
           <div>
             <label className="block text-sm font-medium text-[#6B7280] mb-2">
@@ -191,7 +156,7 @@ export default function RegisterPage() {
           <div className="bg-[#FFF8F5] border border-[#F3E8E2] rounded-xl p-4 text-center">
             <div className="text-4xl mb-2">{avatar}</div>
             <div className="font-bold text-lg text-[#2D2D2D]">{name || "????"}</div>
-            <div className="text-xs text-[#9CA3AF]">Grade {grade} · 英语学习者</div>
+            <div className="text-xs text-[#9CA3AF]">English Learner · 英语学习者</div>
           </div>
 
           {error && (
