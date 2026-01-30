@@ -1,5 +1,7 @@
 // Spaced Repetition System (SRS) — SM-2 / Leitner-style algorithm
 
+import { syncColumnToCloud, loadColumnFromCloud } from "./cloud-sync";
+
 const SRS_KEY = "english-buddy-srs";
 
 export interface SRSCard {
@@ -132,6 +134,7 @@ export function loadCards(): SRSCard[] {
 export function saveCards(cards: SRSCard[]): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(SRS_KEY, JSON.stringify(cards));
+  syncColumnToCloud("srs_data", { cards, updated_at: new Date().toISOString() });
 }
 
 export function addCard(itemId: string, itemType: SRSCard["itemType"]): SRSCard[] {
@@ -248,5 +251,33 @@ export function getReviewStreak(): number {
     return raw ? JSON.parse(raw).streak || 0 : 0;
   } catch {
     return 0;
+  }
+}
+
+// ─── Cloud sync ──────────────────────────────────────────────
+
+export async function loadSRSFromCloud(): Promise<boolean> {
+  try {
+    const cloud = await loadColumnFromCloud<{ cards: SRSCard[]; updated_at: string }>("srs_data");
+    if (!cloud || !cloud.cards) return false;
+    const localCards = loadCards();
+    const localRaw = localStorage.getItem(SRS_KEY);
+    // Simple: if cloud has data and local is empty, use cloud
+    // Otherwise use cloud if it has more cards (merge not needed for SRS — cloud wins)
+    if (localCards.length === 0 && cloud.cards.length > 0) {
+      saveCards(cloud.cards);
+      return true;
+    }
+    if (cloud.cards.length > localCards.length) {
+      saveCards(cloud.cards);
+      return true;
+    }
+    // Local has more — push to cloud
+    if (localCards.length > 0) {
+      syncColumnToCloud("srs_data", { cards: localCards, updated_at: new Date().toISOString() });
+    }
+    return false;
+  } catch {
+    return false;
   }
 }

@@ -5,8 +5,23 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Mic, MessageCircle, BookOpen, Settings, Home, ShoppingBag, Trophy, Brain, Languages } from "lucide-react";
 import { getUser, isLoggedIn, type UserProfile } from "@/lib/auth-store";
-import { getProgress, getLevelInfo } from "@/lib/progress-store";
-import { getCoinState } from "@/lib/coin-store";
+import { getProgress, getLevelInfo, loadProgressFromCloud } from "@/lib/progress-store";
+import { getCoinState, loadCoinsFromCloud } from "@/lib/coin-store";
+import { loadAchievementsFromCloud } from "@/lib/achievements";
+import { loadSRSFromCloud } from "@/lib/srs-engine";
+
+async function loadCloudData() {
+  try {
+    await Promise.all([
+      loadProgressFromCloud(),
+      loadCoinsFromCloud(),
+      loadAchievementsFromCloud(),
+      loadSRSFromCloud(),
+    ]);
+  } catch {
+    // Cloud sync is best-effort
+  }
+}
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "首页" },
@@ -34,6 +49,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       if (isLoggedIn()) {
         const u = getUser();
         setUser(u);
+        // Load from cloud in background (updates localStorage if cloud is newer)
+        loadCloudData().then(() => {
+          // Refresh UI with potentially updated data
+          const p = getProgress();
+          setLevelInfo(getLevelInfo(p.xp));
+          setCoins(getCoinState().coins);
+        });
         const p = getProgress();
         setLevelInfo(getLevelInfo(p.xp));
         setCoins(getCoinState().coins);

@@ -1,5 +1,7 @@
 // Achievement system for English Buddy
 
+import { syncColumnToCloud, loadColumnFromCloud } from "./cloud-sync";
+
 export interface Achievement {
   id: string;
   name: string;
@@ -58,11 +60,13 @@ const ACH_KEY = "english-buddy-achievements";
 export interface AchievementState {
   unlocked: string[];
   unlockedAt: Record<string, string>;
+  updated_at: string;
 }
 
 const defaultAchState: AchievementState = {
   unlocked: [],
   unlockedAt: {},
+  updated_at: "",
 };
 
 export function getAchievementState(): AchievementState {
@@ -78,7 +82,9 @@ export function getAchievementState(): AchievementState {
 
 function saveAchievementState(s: AchievementState): void {
   if (typeof window === "undefined") return;
+  s.updated_at = new Date().toISOString();
   localStorage.setItem(ACH_KEY, JSON.stringify(s));
+  syncColumnToCloud("achievements_data", s);
 }
 
 export function unlockAchievement(id: string): { isNew: boolean } {
@@ -145,4 +151,25 @@ export function checkAchievements(stats: {
   }
 
   return newlyUnlocked;
+}
+
+// ─── Cloud sync ──────────────────────────────────────────────
+
+export async function loadAchievementsFromCloud(): Promise<boolean> {
+  try {
+    const cloud = await loadColumnFromCloud<AchievementState>("achievements_data");
+    if (!cloud) return false;
+    const local = getAchievementState();
+    if (cloud.updated_at && (!local.updated_at || cloud.updated_at > local.updated_at)) {
+      const merged = { ...defaultAchState, ...cloud };
+      localStorage.setItem(ACH_KEY, JSON.stringify(merged));
+      return true;
+    }
+    if (local.updated_at && (!cloud.updated_at || local.updated_at > cloud.updated_at)) {
+      syncColumnToCloud("achievements_data", local);
+    }
+    return false;
+  } catch {
+    return false;
+  }
 }

@@ -5,6 +5,7 @@
 import { getSupabase } from "./supabase";
 import { earnCoins, COIN_RATES } from "./coin-store";
 import { checkAchievements } from "./achievements";
+import { syncColumnToCloud, loadColumnFromCloud } from "./cloud-sync";
 
 export interface ProgressData {
   // XP & Level
@@ -37,6 +38,9 @@ export interface ProgressData {
 
   // Daily login reward claimed today?
   lastLoginRewardDate: string;
+
+  // Cloud sync timestamp
+  updated_at: string;
 }
 
 const STORAGE_KEY = "english-buddy-progress";
@@ -59,6 +63,7 @@ const defaultProgress: ProgressData = {
   vocabAttempts: 0,
   chatCount: 0,
   lastLoginRewardDate: "",
+  updated_at: "",
 };
 
 // ─── Level system ────────────────────────────────────────────
@@ -119,11 +124,36 @@ export function getProgress(): ProgressData {
 export function saveProgress(data: Partial<ProgressData>) {
   if (typeof window === "undefined") return;
   const current = getProgress();
-  const updated = { ...current, ...data };
+  const updated = { ...current, ...data, updated_at: new Date().toISOString() };
   // Recompute level
   const levelInfo = getLevelInfo(updated.xp);
   updated.level = levelInfo.level;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  // Fire-and-forget cloud sync (debounced)
+  syncColumnToCloud("progress_data", updated);
+}
+
+// ─── Cloud load (called on init) ─────────────────────────────
+
+export async function loadProgressFromCloud(): Promise<boolean> {
+  try {
+    const cloud = await loadColumnFromCloud<ProgressData>("progress_data");
+    if (!cloud) return false;
+    const local = getProgress();
+    // Cloud wins if newer
+    if (cloud.updated_at && (!local.updated_at || cloud.updated_at > local.updated_at)) {
+      const merged = { ...defaultProgress, ...cloud };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      return true;
+    }
+    // Local is newer — push to cloud
+    if (local.updated_at && (!cloud.updated_at || local.updated_at > cloud.updated_at)) {
+      syncColumnToCloud("progress_data", local);
+    }
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 // ─── Supabase sync (fire-and-forget) ────────────────────────

@@ -1,5 +1,7 @@
 // Coin system — earn coins through progress, spend on avatars, titles, themes
 
+import { syncColumnToCloud, loadColumnFromCloud } from "./cloud-sync";
+
 const COIN_KEY = "english-buddy-coins";
 
 export interface CoinState {
@@ -9,6 +11,7 @@ export interface CoinState {
   unlockedTitles: string[];
   unlockedThemes: string[];
   equippedTitle: string;
+  updated_at: string;
 }
 
 const defaultState: CoinState = {
@@ -18,6 +21,7 @@ const defaultState: CoinState = {
   unlockedTitles: [],
   unlockedThemes: [],
   equippedTitle: "",
+  updated_at: "",
 };
 
 // ─── Reward catalog ──────────────────────────────────────────
@@ -111,7 +115,9 @@ export function getCoinState(): CoinState {
 
 function saveCoinState(s: CoinState): void {
   if (typeof window === "undefined") return;
+  s.updated_at = new Date().toISOString();
   localStorage.setItem(COIN_KEY, JSON.stringify(s));
+  syncColumnToCloud("coins_data", s);
 }
 
 export function earnCoins(amount: number, _reason?: string): CoinState {
@@ -179,5 +185,26 @@ export function getRarityLabel(rarity: string): { en: string; cn: string } {
     case "epic": return { en: "Epic", cn: "史诗" };
     case "legendary": return { en: "Legendary", cn: "传说" };
     default: return { en: "", cn: "" };
+  }
+}
+
+// ─── Cloud sync ──────────────────────────────────────────────
+
+export async function loadCoinsFromCloud(): Promise<boolean> {
+  try {
+    const cloud = await loadColumnFromCloud<CoinState>("coins_data");
+    if (!cloud) return false;
+    const local = getCoinState();
+    if (cloud.updated_at && (!local.updated_at || cloud.updated_at > local.updated_at)) {
+      const merged = { ...defaultState, ...cloud };
+      localStorage.setItem(COIN_KEY, JSON.stringify(merged));
+      return true;
+    }
+    if (local.updated_at && (!cloud.updated_at || local.updated_at > cloud.updated_at)) {
+      syncColumnToCloud("coins_data", local);
+    }
+    return false;
+  } catch {
+    return false;
   }
 }
