@@ -12,13 +12,7 @@ export async function speak(text: string, rate = 1): Promise<void> {
   // Stop any currently playing audio
   stopSpeaking();
 
-  // Normal speed (rate >= 0.8): use Web Speech API for instant response
-  // Slow speed (rate < 0.8): use OpenAI TTS for natural slow pronunciation
-  if (rate >= 0.8) {
-    return speakWithWebSpeech(text, rate);
-  }
-
-  // For slow speed, try OpenAI TTS (with caching)
+  // Always try OpenAI TTS first (better quality), fall back to Web Speech API
   const cacheKey = `${text}__${rate}`;
   let audioUrl = ttsCache.get(cacheKey);
 

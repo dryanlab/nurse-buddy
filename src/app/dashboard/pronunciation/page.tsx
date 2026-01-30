@@ -337,7 +337,7 @@ export default function PronunciationPage() {
             <Volume2 className="w-4 h-4" /> 听发音
           </button>
           <button
-            onClick={() => handleSpeak(0.5)}
+            onClick={() => handleSpeak(0.7)}
             className="flex items-center gap-2 bg-[#FFF5EB] text-[#F4A261] px-4 py-2.5 rounded-xl text-sm font-medium active:scale-95 transition-transform"
           >
             🐢 慢速

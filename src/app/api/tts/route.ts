@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
         model: "tts-1",
         input: text.slice(0, 4096), // max 4096 chars
         voice: "nova",
-        speed: speed || 0.5,
+        speed: speed || 1,
         response_format: "mp3",
       }),
     });
