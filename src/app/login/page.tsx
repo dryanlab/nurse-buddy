@@ -19,28 +19,35 @@ export default function LoginPage() {
     async function check() {
       const user = getUser();
       if (user) { router.replace("/dashboard"); return; }
-      // Check Supabase session (Google OAuth callback)
-      if (isSupabaseConfigured) {
-        const { getSupabase } = await import("@/lib/supabase");
-        const supabase = getSupabase();
-        if (supabase) {
-          // Check if URL has OAuth callback params
-          const hasAuthParams = window.location.hash.includes("access_token") ||
-            window.location.search.includes("code=");
-          // If OAuth callback, wait longer for Supabase to process
-          const maxRetries = hasAuthParams ? 10 : 2;
-          for (let i = 0; i < maxRetries; i++) {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-              const { ensureProfile } = await import("@/lib/auth-store");
-              const { hasProfile, needsSetup } = await ensureProfile();
-              if (hasProfile) { router.replace("/dashboard"); return; }
-              if (needsSetup) { router.replace("/complete-profile"); return; }
-              break;
-            }
-            await new Promise(r => setTimeout(r, 500));
-          }
+      if (!isSupabaseConfigured) return;
+
+      const { getSupabase } = await import("@/lib/supabase");
+      const supabase = getSupabase();
+      if (!supabase) return;
+
+      // Handle PKCE OAuth callback: exchange code for session
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      if (code) {
+        try {
+          await supabase.auth.exchangeCodeForSession(code);
+        } catch (e) {
+          console.error("OAuth code exchange failed:", e);
         }
+      }
+
+      // Also handle implicit flow (hash fragment)
+      if (window.location.hash.includes("access_token")) {
+        // Supabase auto-detects hash, just wait a bit
+        await new Promise(r => setTimeout(r, 500));
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { ensureProfile } = await import("@/lib/auth-store");
+        const { hasProfile, needsSetup } = await ensureProfile();
+        if (hasProfile) { router.replace("/dashboard"); return; }
+        if (needsSetup) { router.replace("/complete-profile"); return; }
       }
     }
     check();
