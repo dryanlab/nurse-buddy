@@ -174,6 +174,13 @@ export default function PhoneticsPage() {
             <div className="text-5xl font-mono font-bold text-[#FF6B6B] mb-2">{selected.symbol}</div>
             <div className="text-lg font-semibold text-[#2D2D2D]">{selected.nameCn}</div>
             <div className="text-sm text-[#9CA3AF]">{selected.name}</div>
+            {/* Listen to this sound */}
+            <button
+              onClick={() => handleSpeak(selected.examples[0]?.word || "a")}
+              className="mt-3 mx-auto flex items-center gap-2 bg-[#FF6B6B] text-white px-5 py-2.5 rounded-full text-sm font-medium active:scale-95 transition-transform shadow-sm"
+            >
+              <Volume2 className="w-4 h-4" /> 听这个音
+            </button>
             <div className="flex justify-center gap-2 mt-3">
               <span
                 className={`text-xs px-3 py-1 rounded-full font-medium ${
@@ -206,13 +213,39 @@ export default function PhoneticsPage() {
             <p className="text-sm text-[#4B5563] leading-relaxed">{selected.description}</p>
           </div>
 
-          {/* Mouth position with diagram */}
+          {/* Mouth position with diagram + step-by-step */}
           <div className="bg-[#F0F4FF] rounded-2xl p-4">
-            <div className="text-xs text-[#7C83FD] font-medium mb-2">👄 口型位置</div>
-            <div className="flex flex-col sm:flex-row items-center gap-3 mb-2">
-              <MouthDiagram symbolId={selected.id} size={160} />
+            <div className="text-xs text-[#7C83FD] font-medium mb-3">👄 口型位置</div>
+            <div className="flex flex-col sm:flex-row gap-4 items-start">
+              {/* SVG diagram */}
+              <div className="flex-shrink-0 bg-white rounded-xl p-2 shadow-sm">
+                <MouthDiagram symbolId={selected.id} size={140} />
+              </div>
+              {/* Step-by-step instructions */}
+              <div className="flex-1 space-y-2">
+                {selected.mouthPosition.split("。").filter(Boolean).map((step, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#7C83FD] text-white text-xs flex items-center justify-center font-bold mt-0.5">{i + 1}</span>
+                    <p className="text-sm text-[#4B5563] leading-relaxed">{step.trim()}。</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <p className="text-sm text-[#4B5563] leading-relaxed">{selected.mouthPosition}</p>
+            {/* Quick practice */}
+            <div className="mt-3 flex gap-2">
+              <button
+                onClick={() => handleSpeak(selected.examples[0]?.word || "a")}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-white text-[#7C83FD] py-2 rounded-xl text-sm font-medium active:scale-95 transition-transform border border-[#7C83FD]/20"
+              >
+                <Volume2 className="w-3.5 h-3.5" /> 正常速度
+              </button>
+              <button
+                onClick={() => speak(selected.examples[0]?.word || "a", 0.25)}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-white text-[#F4A261] py-2 rounded-xl text-sm font-medium active:scale-95 transition-transform border border-[#F4A261]/20"
+              >
+                🐢 超慢速
+              </button>
+            </div>
           </div>
 
           {/* Examples */}
