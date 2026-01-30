@@ -25,11 +25,6 @@ export default function LoginPage() {
       const supabase = getSupabase();
       if (!supabase) return;
 
-      // DEBUG: show what URL we landed on
-      const fullUrl = window.location.href;
-      const oauthUrl = (window as any).__OAUTH_URL || "";
-      alert("Current URL:\n" + fullUrl + "\n\nCaptured OAuth URL:\n" + (oauthUrl || "(none)"));
-
       // Handle PKCE OAuth callback: exchange code for session
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");

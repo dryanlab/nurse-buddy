@@ -29,17 +29,6 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: `
-          (function() {
-            var h = window.location.href;
-            if (h.includes('access_token') || h.includes('code=') || h.includes('error=')) {
-              window.__OAUTH_URL = h;
-              document.title = 'OAuth: ' + h.substring(0, 200);
-            }
-          })();
-        `}} />
-      </head>
       <body className="antialiased min-h-screen">
         <ThemeProvider>{children}</ThemeProvider>
       </body>

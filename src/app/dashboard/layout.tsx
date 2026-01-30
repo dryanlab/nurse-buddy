@@ -60,19 +60,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         setReady(true);
         return;
       }
-      // Then check Supabase session (match code-buddy approach)
+      // Then check Supabase session
       const { getSessionUser, ensureProfile } = await import("@/lib/auth-store");
       const { getSupabase } = await import("@/lib/supabase");
       const supabase = getSupabase();
 
       if (supabase) {
-        // Try getSession; if empty, wait 500ms and retry (OAuth token needs processing time)
-        let { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
+        // Check if this looks like an OAuth callback (hash has access_token)
+        const isOAuthCallback = window.location.hash.includes("access_token");
+        const maxRetries = isOAuthCallback ? 10 : 3;
+
+        let session = null;
+        for (let i = 0; i < maxRetries; i++) {
+          const { data } = await supabase.auth.getSession();
+          if (data.session) { session = data.session; break; }
           await new Promise(r => setTimeout(r, 500));
-          ({ data: { session } } = await supabase.auth.getSession());
-          if (!session) { router.replace("/login"); return; }
         }
+
+        if (!session) { router.replace("/login"); return; }
+
         const { hasProfile, needsSetup } = await ensureProfile();
         if (needsSetup) { router.replace("/complete-profile"); return; }
         if (hasProfile) {
