@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Volume2, Search, CheckCircle, BookOpen, Trophy, ArrowLeft, Sparkles, Filter } from "lucide-react";
 import { ipaSymbols, consonants, vowels, diphthongs, type IPASymbol } from "@/data/ipa-guide";
 import { speak } from "@/lib/speech";
-import MouthDiagram from "@/components/MouthDiagram";
+import { mouthDiagramMap } from "@/data/mouth-diagram-map";
 
 type Tab = "consonant" | "vowel" | "diphthong";
 type DifficultyFilter = "all" | "easy" | "medium" | "hard";
@@ -217,9 +217,19 @@ export default function PhoneticsPage() {
           <div className="bg-[#F0F4FF] rounded-2xl p-4">
             <div className="text-xs text-[#7C83FD] font-medium mb-3">👄 口型位置</div>
             <div className="flex flex-col sm:flex-row gap-4 items-start">
-              {/* SVG diagram */}
+              {/* Mouth diagram image */}
               <div className="flex-shrink-0 bg-white rounded-xl p-2 shadow-sm">
-                <MouthDiagram symbolId={selected.id} size={140} />
+                {mouthDiagramMap[selected.id] ? (
+                  <img
+                    src={mouthDiagramMap[selected.id]}
+                    alt={`${selected.nameCn}口型图`}
+                    width={160}
+                    height={160}
+                    className="rounded-lg"
+                  />
+                ) : (
+                  <div className="w-[160px] h-[160px] flex items-center justify-center text-gray-300 text-4xl">👄</div>
+                )}
               </div>
               {/* Step-by-step instructions */}
               <div className="flex-1 space-y-2">
