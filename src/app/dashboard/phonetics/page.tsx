@@ -176,7 +176,7 @@ export default function PhoneticsPage() {
             <div className="text-sm text-[#9CA3AF]">{selected.name}</div>
             {/* Listen to this sound */}
             <button
-              onClick={() => handleSpeak(selected.examples[0]?.word || "a")}
+              onClick={() => handleSpeak(selected.soundText || selected.examples[0]?.word || "a")}
               className="mt-3 mx-auto flex items-center gap-2 bg-[#FF6B6B] text-white px-5 py-2.5 rounded-full text-sm font-medium active:scale-95 transition-transform shadow-sm"
             >
               <Volume2 className="w-4 h-4" /> 听这个音
@@ -234,13 +234,13 @@ export default function PhoneticsPage() {
             {/* Quick practice */}
             <div className="mt-3 flex gap-2">
               <button
-                onClick={() => handleSpeak(selected.examples[0]?.word || "a")}
+                onClick={() => handleSpeak(selected.soundText || selected.examples[0]?.word || "a")}
                 className="flex-1 flex items-center justify-center gap-1.5 bg-white text-[#7C83FD] py-2 rounded-xl text-sm font-medium active:scale-95 transition-transform border border-[#7C83FD]/20"
               >
-                <Volume2 className="w-3.5 h-3.5" /> 正常速度
+                <Volume2 className="w-3.5 h-3.5" /> 单独发音
               </button>
               <button
-                onClick={() => speak(selected.examples[0]?.word || "a", 0.25)}
+                onClick={() => speak(selected.soundText || selected.examples[0]?.word || "a", 0.25)}
                 className="flex-1 flex items-center justify-center gap-1.5 bg-white text-[#F4A261] py-2 rounded-xl text-sm font-medium active:scale-95 transition-transform border border-[#F4A261]/20"
               >
                 🐢 超慢速

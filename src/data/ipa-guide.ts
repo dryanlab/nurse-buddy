@@ -11,6 +11,8 @@ export interface IPASymbol {
   similar?: string[];
   difficulty: "easy" | "medium" | "hard";
   tip: string;
+  /** Minimal syllable/sound for TTS to pronounce just this phoneme */
+  soundText?: string;
 }
 
 export const ipaSymbols: IPASymbol[] = [
@@ -32,6 +34,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/b/"],
     difficulty: "easy",
     tip: "想象吹灭蜡烛：「噗」——双唇用力弹开，不振动声带。",
+    soundText: "puh",
   },
   {
     id: "c-b",
@@ -50,6 +53,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/p/"],
     difficulty: "medium",
     tip: "把手放在喉咙上，发 /b/ 时应该感到振动，发 /p/ 时没有。",
+    soundText: "buh",
   },
   {
     id: "c-t",
@@ -68,6 +72,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/d/"],
     difficulty: "easy",
     tip: "舌尖轻触上牙龈后快速弹开，像敲一下门：「嗒」。",
+    soundText: "tuh",
   },
   {
     id: "c-d",
@@ -86,6 +91,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/t/"],
     difficulty: "medium",
     tip: "和 /b/ 一样，手放喉咙感受振动。英文的 d 是真正的浊音。",
+    soundText: "duh",
   },
   {
     id: "c-k",
@@ -104,6 +110,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/ɡ/"],
     difficulty: "easy",
     tip: "舌根用力顶上颚后弹开，像咳嗽的第一个声音：「咳」。",
+    soundText: "kuh",
   },
   {
     id: "c-g",
@@ -122,6 +129,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/k/"],
     difficulty: "medium",
     tip: "发 /k/ 的同时让喉咙嗡嗡响，就是 /ɡ/。",
+    soundText: "guh",
   },
   {
     id: "c-f",
@@ -140,6 +148,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/v/"],
     difficulty: "easy",
     tip: "上牙咬住下唇吹气，像吹灭生日蜡烛的「呼」。",
+    soundText: "fff",
   },
   {
     id: "c-v",
@@ -177,6 +186,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/ð/", "/s/", "/f/"],
     difficulty: "hard",
     tip: "「咬舌头」！舌尖大胆伸到上下牙之间，轻轻吹气。对着镜子练习，要看到舌尖。",
+    soundText: "vvv",
   },
   {
     id: "c-eth",
@@ -196,6 +206,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/θ/", "/z/", "/d/"],
     difficulty: "hard",
     tip: "和 /θ/ 一样咬舌头，但要让喉咙嗡嗡响。the, this, that 都是这个音。",
+    soundText: "thh",
   },
   {
     id: "c-s",
@@ -214,6 +225,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/z/", "/θ/"],
     difficulty: "easy",
     tip: "像蛇发出的「嘶嘶」声，舌尖在牙齿后面，不要伸出来。",
+    soundText: "the",
   },
   {
     id: "c-z",
@@ -232,6 +244,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/s/", "/ð/"],
     difficulty: "medium",
     tip: "蜜蜂叫：「嗡嗡嗡」，感受喉咙振动，那就是 /z/。",
+    soundText: "sss",
   },
   {
     id: "c-sh",
@@ -250,6 +263,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/ʒ/", "/tʃ/"],
     difficulty: "easy",
     tip: "嘘！安静！「嘘~」就是 /ʃ/ 的声音，嘴唇微微噘起。",
+    soundText: "zzz",
   },
   {
     id: "c-zh",
@@ -268,6 +282,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/ʃ/", "/dʒ/"],
     difficulty: "hard",
     tip: "发 /ʃ/（嘘）的同时让喉咙振动，就变成 /ʒ/。常见于 vision, measure。",
+    soundText: "shh",
   },
   {
     id: "c-ch",
@@ -286,6 +301,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/dʒ/", "/ʃ/"],
     difficulty: "easy",
     tip: "打喷嚏：「阿嚏！」最后那个音就是 /tʃ/。",
+    soundText: "zhuh",
   },
   {
     id: "c-j",
@@ -304,6 +320,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/tʃ/", "/ʒ/"],
     difficulty: "medium",
     tip: "发 /tʃ/（吃）的同时让喉咙振动 = /dʒ/。Judge 两端都是这个音。",
+    soundText: "chuh",
   },
   {
     id: "c-m",
@@ -322,6 +339,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/n/"],
     difficulty: "easy",
     tip: "闭嘴哼一声「嗯~」就是 /m/。",
+    soundText: "juh",
   },
   {
     id: "c-n",
@@ -340,6 +358,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/m/", "/ŋ/"],
     difficulty: "easy",
     tip: "舌尖顶上牙龈说「呢~」就是 /n/。",
+    soundText: "mmm",
   },
   {
     id: "c-ng",
@@ -358,6 +377,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/n/"],
     difficulty: "medium",
     tip: "发 /ŋ/ 时舌尖放松不动，只有舌根向上。想象说中文「昂」的收尾音。",
+    soundText: "nnn",
   },
   {
     id: "c-h",
@@ -376,6 +396,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: [],
     difficulty: "easy",
     tip: "对着镜子哈气：「哈~」，就是 /h/。非常轻的呼气。",
+    soundText: "ng",
   },
   {
     id: "c-l",
@@ -394,6 +415,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/r/"],
     difficulty: "medium",
     tip: "舌尖顶上牙龈 = /l/。记住：/l/ 要「碰」，/r/ 不「碰」。",
+    soundText: "huh",
   },
   {
     id: "c-r",
@@ -412,6 +434,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/l/"],
     difficulty: "hard",
     tip: "想象学狗叫「grrr」——嘴唇噘成小圆圈，舌头悬在口中不碰任何地方。",
+    soundText: "lll",
   },
   {
     id: "c-w",
@@ -430,6 +453,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/v/"],
     difficulty: "medium",
     tip: "/w/ 就像亲嘴的起始动作：嘴唇噘圆再打开。不要咬嘴唇，那是 /v/！",
+    soundText: "rrr",
   },
   {
     id: "c-y",
@@ -448,6 +472,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: [],
     difficulty: "easy",
     tip: "就是中文「耶」的开头音。yes = 耶s。",
+    soundText: "wuh",
   },
 
   // ==================== SHORT VOWELS (7) ====================
@@ -469,6 +494,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/iː/", "/e/"],
     difficulty: "medium",
     tip: "微笑着说一个很短的「衣」，不要拉长。sit ≠ seat！",
+    soundText: "yuh",
   },
   {
     id: "v-e",
@@ -488,6 +514,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/æ/", "/ɪ/"],
     difficulty: "easy",
     tip: "就像叫别人时说「诶」，嘴巴自然半开。",
+    soundText: "ih",
   },
   {
     id: "v-ae",
@@ -507,6 +534,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/e/", "/ʌ/"],
     difficulty: "hard",
     tip: "想象去看医生，医生说张大嘴说「啊~」，但同时嘴角要向两边拉——那就是 /æ/。",
+    soundText: "eh",
   },
   {
     id: "v-uh",
@@ -526,6 +554,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/ɑː/", "/ə/"],
     difficulty: "medium",
     tip: "惊讶时「啊？」的短版本。轻轻一声，不要拉长。",
+    soundText: "aaa",
   },
   {
     id: "v-o",
@@ -545,6 +574,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/ɔː/", "/ɑː/"],
     difficulty: "medium",
     tip: "嘴唇微微噘圆，说一个短短的「哦」。英式发音专属。",
+    soundText: "uh",
   },
   {
     id: "v-u",
@@ -564,6 +594,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/uː/"],
     difficulty: "medium",
     tip: "嘴唇轻轻一噘，说一个懒洋洋的短「乌」。不要太用力噘嘴。",
+    soundText: "aw",
   },
   {
     id: "v-schwa",
@@ -583,6 +614,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/ʌ/"],
     difficulty: "hard",
     tip: "Schwa 是英语最懒的音——嘴巴放松，发出一个含糊的「额~」。记住：banana 有三个元音，两个都是 schwa！",
+    soundText: "oo",
   },
 
   // ==================== LONG VOWELS (5) ====================
@@ -604,6 +636,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/ɪ/"],
     difficulty: "easy",
     tip: "开心地笑着说「衣~」，拉长音。",
+    soundText: "uh",
   },
   {
     id: "v-aa",
@@ -623,6 +656,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/ʌ/", "/ɒ/"],
     difficulty: "easy",
     tip: "看医生时张大嘴说「啊~」，就是 /ɑː/。",
+    soundText: "ee",
   },
   {
     id: "v-oo",
@@ -642,6 +676,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/ɒ/", "/oʊ/"],
     difficulty: "medium",
     tip: "嘴唇噘成 O 形，说一个长长的「哦~」。",
+    soundText: "ah",
   },
   {
     id: "v-uu",
@@ -661,6 +696,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/ʊ/"],
     difficulty: "easy",
     tip: "用力噘嘴说「乌~」，持续2秒。",
+    soundText: "aw",
   },
   {
     id: "v-er",
@@ -680,6 +716,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/ə/"],
     difficulty: "hard",
     tip: "犹豫时说的「额~」拉长版。美式英语中舌尖要微微上卷。nurse 是护理核心词！",
+    soundText: "oo",
   },
 
   // ==================== DIPHTHONGS (8) ====================
@@ -701,6 +738,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/aɪ/"],
     difficulty: "easy",
     tip: "说中文「诶」时注意嘴巴从大到小的变化，就是 /eɪ/。",
+    soundText: "er",
   },
   {
     id: "d-ai",
@@ -720,6 +758,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/eɪ/", "/ɔɪ/"],
     difficulty: "easy",
     tip: "中文「爱」= /aɪ/。I love you 的 I 就是这个音。",
+    soundText: "ay",
   },
   {
     id: "d-oi",
@@ -739,6 +778,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/aɪ/"],
     difficulty: "easy",
     tip: "就是中文「哦咦」连读。boy = 博衣。",
+    soundText: "eye",
   },
   {
     id: "d-au",
@@ -758,6 +798,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/oʊ/"],
     difficulty: "easy",
     tip: "中文「嗷~」就是 /aʊ/。想象狼嚎：「嗷呜~」。",
+    soundText: "oy",
   },
   {
     id: "d-ou",
@@ -777,6 +818,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/aʊ/", "/ɔː/"],
     difficulty: "easy",
     tip: "中文「欧」= /oʊ/。no = 呢欧。",
+    soundText: "ow",
   },
   {
     id: "d-ie",
@@ -796,6 +838,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/eə/"],
     difficulty: "medium",
     tip: "先说「衣」再说「额」，连起来：衣额。here = h+衣额。",
+    soundText: "oh",
   },
   {
     id: "d-ea",
@@ -815,6 +858,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/ɪə/"],
     difficulty: "medium",
     tip: "先说「诶」再说「额」，连起来。air = 诶额。",
+    soundText: "ear",
   },
   {
     id: "d-ua",
@@ -833,6 +877,7 @@ export const ipaSymbols: IPASymbol[] = [
     similar: ["/ɔː/"],
     difficulty: "hard",
     tip: "先说「乌」再说「额」。tour = t+乌额。这个音比较少见，知道就好。",
+    soundText: "oor",
   },
 ];
 
