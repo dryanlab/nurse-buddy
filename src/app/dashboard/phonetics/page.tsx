@@ -250,7 +250,7 @@ export default function PhoneticsPage() {
                 <Volume2 className="w-3.5 h-3.5" /> 单独发音
               </button>
               <button
-                onClick={() => speak(selected.soundText || selected.examples[0]?.word || "a", 0.25)}
+                onClick={() => speak(selected.soundText || selected.examples[0]?.word || "a", 0.5)}
                 className="flex-1 flex items-center justify-center gap-1.5 bg-white text-[#F4A261] py-2 rounded-xl text-sm font-medium active:scale-95 transition-transform border border-[#F4A261]/20"
               >
                 🐢 超慢速
