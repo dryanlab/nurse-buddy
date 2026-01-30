@@ -18,10 +18,25 @@ export default function LoginPage() {
   useEffect(() => {
     const user = getUser();
     if (user) { router.replace("/dashboard"); return; }
-    // Check Supabase session (Google OAuth callback)
-    import("@/lib/auth-store").then(({ getSessionUser }) =>
-      getSessionUser().then((su) => { if (su) router.replace("/dashboard"); })
-    );
+    // Listen for Supabase auth state changes (handles Google OAuth callback)
+    if (isSupabaseConfigured) {
+      import("@/lib/supabase").then(({ getSupabase }) => {
+        const supabase = getSupabase();
+        if (!supabase) return;
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
+            const { ensureProfile } = await import("@/lib/auth-store");
+            const { hasProfile, needsSetup } = await ensureProfile();
+            if (hasProfile) {
+              router.replace("/dashboard");
+            } else if (needsSetup) {
+              router.replace("/complete-profile");
+            }
+            subscription.unsubscribe();
+          }
+        });
+      });
+    }
   }, [router]);
 
   async function handleLogin() {

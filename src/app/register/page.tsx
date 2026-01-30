@@ -21,11 +21,22 @@ export default function RegisterPage() {
   useEffect(() => {
     const user = getUser();
     if (user) { router.replace("/dashboard"); return; }
-    // Check Supabase session (Google OAuth callback)
+    // Listen for Supabase auth state changes (handles Google OAuth callback)
     if (isSupabaseConfigured) {
-      ensureProfile().then(({ hasProfile, needsSetup }) => {
-        if (hasProfile) router.replace("/dashboard");
-        else if (needsSetup) router.replace("/complete-profile");
+      import("@/lib/supabase").then(({ getSupabase }) => {
+        const supabase = getSupabase();
+        if (!supabase) return;
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
+            const result = await ensureProfile();
+            if (result.hasProfile) {
+              router.replace("/dashboard");
+            } else if (result.needsSetup) {
+              router.replace("/complete-profile");
+            }
+            subscription.unsubscribe();
+          }
+        });
       });
     }
   }, [router]);
