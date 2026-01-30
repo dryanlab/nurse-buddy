@@ -11,6 +11,54 @@ type Tab = "consonant" | "vowel" | "diphthong";
 type DifficultyFilter = "all" | "easy" | "medium" | "hard";
 type Mode = "learn" | "quiz";
 
+/**
+ * Map IPA symbol IDs to the letter patterns that produce that sound.
+ * Used to highlight relevant letters in example words.
+ */
+const ipaLetterPatterns: Record<string, RegExp> = {
+  "c-p": /p(?!h)/gi, "c-b": /b/gi, "c-t": /t(?!h|ion|ious)/gi, "c-d": /d/gi,
+  "c-k": /k|c(?![eiy])|ck|q/gi, "c-g": /g(?!h)/gi,
+  "c-f": /f|ph|gh(?=\b)/gi, "c-v": /v/gi,
+  "c-theta": /th/gi, "c-eth": /th/gi,
+  "c-s": /s(?!h)|c(?=[eiy])|ss/gi, "c-z": /z|s(?=e\b)|s(?=[aeiou])/gi,
+  "c-sh": /sh|ti(?=on)|ci(?=ous|al)/gi, "c-zh": /s(?=ion|ure)|g(?=e\b)/gi,
+  "c-ch": /ch|tch|t(?=ure)/gi, "c-j": /j|g(?=[eiy])|dg/gi,
+  "c-m": /m/gi, "c-n": /n(?!g)/gi, "c-ng": /ng|n(?=k)/gi,
+  "c-h": /h/gi, "c-l": /l/gi, "c-r": /r|wr/gi, "c-w": /w/gi, "c-y": /y/gi,
+  "v-i": /i(?!e\b|gh)/gi, "v-ii": /ee|ea|ie|e(?=\b)|i/gi,
+  "v-e": /e(?!e|a)/gi, "v-ae": /a(?!r|w|ll|l\b)/gi,
+  "v-uh": /u(?!r)|o(?!o|r|w)/gi, "v-o": /o(?!o|u|w)/gi,
+  "v-u": /oo|u/gi, "v-uu": /oo|ue|ew|u/gi,
+  "v-schwa": /a|e|o|u/gi, "v-aa": /a(?!e|i)|ar/gi,
+  "v-oo": /a(?=ll|w)|o(?!o|u)|or|ou(?=ght)/gi, "v-er": /er|ir|ur|ear/gi,
+  "d-ei": /a(?!r)(?=.e\b)|ai|ay|ey|ei/gi, "d-ai": /i(?=.e\b)|igh|y\b|ie/gi,
+  "d-oi": /oi|oy/gi, "d-au": /ou|ow/gi, "d-ou": /o(?=.e\b)|oa|ow/gi,
+  "d-ie": /ear|eer|ere/gi, "d-ea": /air|are|ear/gi, "d-ua": /oor|our|ure/gi,
+};
+
+/** Highlight letters in a word that correspond to the given IPA sound */
+function highlightWord(word: string, symbolId: string): React.ReactNode {
+  const pattern = ipaLetterPatterns[symbolId];
+  if (!pattern) return <span className="font-semibold text-[#2D2D2D]">{word}</span>;
+
+  // Reset lastIndex for global regex
+  pattern.lastIndex = 0;
+  const parts: React.ReactNode[] = [];
+  let lastIdx = 0;
+  let match: RegExpExecArray | null;
+
+  // Only highlight first match to avoid confusion
+  match = pattern.exec(word);
+  if (match) {
+    if (match.index > 0) parts.push(<span key="pre" className="font-semibold text-[#2D2D2D]">{word.slice(0, match.index)}</span>);
+    parts.push(<span key="hl" className="font-bold text-[#7C83FD] bg-[#7C83FD]/10 px-0.5 rounded">{word.slice(match.index, match.index + match[0].length)}</span>);
+    if (match.index + match[0].length < word.length) parts.push(<span key="post" className="font-semibold text-[#2D2D2D]">{word.slice(match.index + match[0].length)}</span>);
+    return <>{parts}</>;
+  }
+
+  return <span className="font-semibold text-[#2D2D2D]">{word}</span>;
+}
+
 interface QuizQuestion {
   symbol: IPASymbol;
   options: string[];
@@ -244,16 +292,16 @@ export default function PhoneticsPage() {
             {/* Quick practice */}
             <div className="mt-3 flex gap-2">
               <button
-                onClick={() => handleSpeak(selected.soundText || selected.examples[0]?.word || "a")}
+                onClick={() => handleSpeak(selected.examples[0]?.word || "a")}
                 className="flex-1 flex items-center justify-center gap-1.5 bg-white text-[#7C83FD] py-2 rounded-xl text-sm font-medium active:scale-95 transition-transform border border-[#7C83FD]/20"
               >
-                <Volume2 className="w-3.5 h-3.5" /> 单独发音
+                <Volume2 className="w-3.5 h-3.5" /> 听例词「{selected.examples[0]?.word}」
               </button>
               <button
-                onClick={() => speak(selected.soundText || selected.examples[0]?.word || "a", 0.5)}
+                onClick={() => speak(selected.examples[0]?.word || "a", 0.5)}
                 className="flex-1 flex items-center justify-center gap-1.5 bg-white text-[#F4A261] py-2 rounded-xl text-sm font-medium active:scale-95 transition-transform border border-[#F4A261]/20"
               >
-                🐢 超慢速
+                🐢 慢速
               </button>
             </div>
           </div>
@@ -265,7 +313,7 @@ export default function PhoneticsPage() {
               {selected.examples.map((ex, i) => (
                 <div key={i} className="flex items-center justify-between bg-[#FFF8F5] rounded-xl px-3 py-2.5">
                   <div>
-                    <span className="font-semibold text-[#2D2D2D]">{ex.word}</span>
+                    {highlightWord(ex.word, selected.id)}
                     <span className="text-[#9CA3AF] font-mono text-sm ml-2">{ex.phonetic}</span>
                     <span className="text-[#6B7280] text-sm ml-2">{ex.chinese}</span>
                   </div>
