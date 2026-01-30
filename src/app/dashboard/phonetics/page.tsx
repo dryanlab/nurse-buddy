@@ -221,13 +221,7 @@ export default function PhoneticsPage() {
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#F3E8E2] text-center">
             <div className="text-5xl font-mono font-bold text-[#FF6B6B] mb-2">{selected.symbol}</div>
             <div className="text-base text-[#4B5563] leading-relaxed mt-1">{selected.description}</div>
-            {/* Listen example word */}
-            <button
-              onClick={() => handleSpeak(selected.examples[0]?.word || "a")}
-              className="mt-3 mx-auto flex items-center gap-2 bg-[#FF6B6B] text-white px-5 py-2.5 rounded-full text-sm font-medium active:scale-95 transition-transform shadow-sm"
-            >
-              <Volume2 className="w-4 h-4" /> 听例词「{selected.examples[0]?.word}」
-            </button>
+            {/* Listen via example words below */}
             <div className="flex justify-center gap-2 mt-3">
               <span
                 className={`text-xs px-3 py-1 rounded-full font-medium ${
