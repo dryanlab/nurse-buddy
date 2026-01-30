@@ -7,313 +7,625 @@ interface MouthDiagramProps {
   size?: number;
 }
 
-/**
- * Front-view mouth diagram showing lip shape, teeth, and tongue position.
- * Much more intuitive than a sagittal cross-section — like looking in a mirror.
- */
+// ─── Articulation types ───
 
-interface MouthShape {
-  // Lip shape
-  lipWidth: number;      // 0-1, how wide the lips spread
-  lipHeight: number;     // 0-1, how open the mouth is
-  lipRound: boolean;     // rounded lips (like /uː/, /oʊ/)
-  // Teeth
-  showTopTeeth: boolean;
-  showBottomTeeth: boolean;
-  teethOnLip: boolean;   // upper teeth on lower lip (like /f/, /v/)
-  // Tongue
-  tongueVisible: boolean;
-  tonguePosition: "tip-out" | "tip-up" | "tip-behind-teeth" | "flat" | "back" | "mid" | "high-front" | "low" | "curled" | "none";
-  // Extra
-  label: string;         // Chinese description shown below
-  airflow?: "out" | "nose" | "sides"; // airflow direction
+type ConsonantPlace =
+  | "bilabial" | "labiodental" | "dental" | "alveolar"
+  | "postalveolar" | "velar" | "glottal" | "palatal" | "labiovelar";
+
+type VowelPos = { height: number; front: number; round?: boolean };
+// height: 0=high, 1=low; front: 0=front, 1=back
+
+interface ConsonantInfo {
+  type: "consonant";
+  place: ConsonantPlace;
+  nasal?: boolean;
+  label: string;
 }
 
-const symbolToMouth: Record<string, MouthShape> = {
-  // === CONSONANTS ===
-  // Bilabials /p/ /b/ /m/ — lips pressed together
-  "c-p": { lipWidth: 0.5, lipHeight: 0, lipRound: false, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: false, tonguePosition: "none", label: "双唇紧闭，突然弹开", airflow: "out" },
-  "c-b": { lipWidth: 0.5, lipHeight: 0, lipRound: false, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: false, tonguePosition: "none", label: "双唇紧闭，振动喉咙", airflow: "out" },
-  "c-m": { lipWidth: 0.5, lipHeight: 0, lipRound: false, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: false, tonguePosition: "none", label: "双唇闭合，气从鼻子出", airflow: "nose" },
-  // Labiodental /f/ /v/ — teeth on lip
-  "c-f": { lipWidth: 0.6, lipHeight: 0.15, lipRound: false, showTopTeeth: true, showBottomTeeth: false, teethOnLip: true, tongueVisible: false, tonguePosition: "none", label: "上齿轻咬下唇，吹气" },
-  "c-v": { lipWidth: 0.6, lipHeight: 0.15, lipRound: false, showTopTeeth: true, showBottomTeeth: false, teethOnLip: true, tongueVisible: false, tonguePosition: "none", label: "上齿轻咬下唇，振动" },
-  // Dental /θ/ /ð/ — tongue between teeth
-  "c-theta": { lipWidth: 0.6, lipHeight: 0.2, lipRound: false, showTopTeeth: true, showBottomTeeth: true, teethOnLip: false, tongueVisible: true, tonguePosition: "tip-out", label: "舌尖伸出上下齿之间" },
-  "c-eth": { lipWidth: 0.6, lipHeight: 0.2, lipRound: false, showTopTeeth: true, showBottomTeeth: true, teethOnLip: false, tongueVisible: true, tonguePosition: "tip-out", label: "舌尖伸出齿间，振动" },
-  // Alveolar /t/ /d/ /n/ /s/ /z/ /l/
-  "c-t": { lipWidth: 0.5, lipHeight: 0.15, lipRound: false, showTopTeeth: true, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "tip-up", label: "舌尖抵住上齿龈" },
-  "c-d": { lipWidth: 0.5, lipHeight: 0.15, lipRound: false, showTopTeeth: true, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "tip-up", label: "舌尖抵住上齿龈，振动" },
-  "c-n": { lipWidth: 0.5, lipHeight: 0.15, lipRound: false, showTopTeeth: true, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "tip-up", label: "舌尖抵上齿龈，气从鼻出", airflow: "nose" },
-  "c-s": { lipWidth: 0.55, lipHeight: 0.1, lipRound: false, showTopTeeth: true, showBottomTeeth: true, teethOnLip: false, tongueVisible: false, tonguePosition: "tip-behind-teeth", label: "牙齿几乎合拢，舌尖靠近齿龈" },
-  "c-z": { lipWidth: 0.55, lipHeight: 0.1, lipRound: false, showTopTeeth: true, showBottomTeeth: true, teethOnLip: false, tongueVisible: false, tonguePosition: "tip-behind-teeth", label: "同 /s/ 但振动喉咙" },
-  "c-l": { lipWidth: 0.5, lipHeight: 0.2, lipRound: false, showTopTeeth: true, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "tip-up", label: "舌尖抵上齿龈，气从两侧出", airflow: "sides" },
-  // Post-alveolar /ʃ/ /ʒ/ /tʃ/ /dʒ/ /r/
-  "c-sh": { lipWidth: 0.45, lipHeight: 0.2, lipRound: true, showTopTeeth: true, showBottomTeeth: true, teethOnLip: false, tongueVisible: false, tonguePosition: "tip-behind-teeth", label: "嘴唇微圆突出，像说「嘘」" },
-  "c-zh": { lipWidth: 0.45, lipHeight: 0.2, lipRound: true, showTopTeeth: true, showBottomTeeth: true, teethOnLip: false, tongueVisible: false, tonguePosition: "tip-behind-teeth", label: "同 /ʃ/ 但振动喉咙" },
-  "c-ch": { lipWidth: 0.45, lipHeight: 0.2, lipRound: true, showTopTeeth: true, showBottomTeeth: true, teethOnLip: false, tongueVisible: false, tonguePosition: "tip-behind-teeth", label: "嘴唇圆突，先堵再放" },
-  "c-j": { lipWidth: 0.45, lipHeight: 0.2, lipRound: true, showTopTeeth: true, showBottomTeeth: true, teethOnLip: false, tongueVisible: false, tonguePosition: "tip-behind-teeth", label: "同 /tʃ/ 但振动喉咙" },
-  "c-r": { lipWidth: 0.45, lipHeight: 0.2, lipRound: true, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "curled", label: "嘴唇微圆，舌尖卷起不碰任何地方" },
-  // Velar /k/ /ɡ/ /ŋ/
-  "c-k": { lipWidth: 0.5, lipHeight: 0.3, lipRound: false, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "back", label: "舌根抬起碰软腭" },
-  "c-g": { lipWidth: 0.5, lipHeight: 0.3, lipRound: false, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "back", label: "舌根碰软腭，振动喉咙" },
-  "c-ng": { lipWidth: 0.5, lipHeight: 0.3, lipRound: false, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "back", label: "舌根碰软腭，气从鼻出", airflow: "nose" },
-  // Glottal /h/
-  "c-h": { lipWidth: 0.55, lipHeight: 0.35, lipRound: false, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: false, tonguePosition: "none", label: "嘴自然张开，从喉咙哈气", airflow: "out" },
-  // Palatal /j/
-  "c-y": { lipWidth: 0.6, lipHeight: 0.15, lipRound: false, showTopTeeth: true, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "high-front", label: "嘴微开，舌面抬向上腭" },
-  // Labiovelar /w/
-  "c-w": { lipWidth: 0.3, lipHeight: 0.25, lipRound: true, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: false, tonguePosition: "back", label: "嘴唇收圆突出，像吹口哨" },
+interface VowelInfo {
+  type: "vowel";
+  pos: VowelPos;
+  label: string;
+}
 
-  // === VOWELS ===
-  // High front /iː/ /ɪ/
-  "v-ii": { lipWidth: 0.7, lipHeight: 0.1, lipRound: false, showTopTeeth: true, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "high-front", label: "嘴角用力向两边拉，像微笑" },
-  "v-i": { lipWidth: 0.6, lipHeight: 0.15, lipRound: false, showTopTeeth: true, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "high-front", label: "比 /iː/ 稍放松，嘴不用拉那么开" },
-  // Mid front /e/
-  "v-e": { lipWidth: 0.6, lipHeight: 0.2, lipRound: false, showTopTeeth: true, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "mid", label: "嘴半开，舌中高位" },
-  // Low front /æ/
-  "v-ae": { lipWidth: 0.65, lipHeight: 0.45, lipRound: false, showTopTeeth: true, showBottomTeeth: true, teethOnLip: false, tongueVisible: true, tonguePosition: "low", label: "嘴大张，舌头放平压低" },
-  // Central /ʌ/ /ə/ /ɜː/
-  "v-uh": { lipWidth: 0.5, lipHeight: 0.3, lipRound: false, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "mid", label: "嘴自然半开，很放松的「啊」" },
-  "v-schwa": { lipWidth: 0.45, lipHeight: 0.2, lipRound: false, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: false, tonguePosition: "mid", label: "最放松的音，嘴巴几乎不动" },
-  "v-er": { lipWidth: 0.4, lipHeight: 0.2, lipRound: true, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "curled", label: "嘴微圆，舌尖稍卷起" },
-  // Back /ɒ/ /ɔː/
-  "v-o": { lipWidth: 0.4, lipHeight: 0.4, lipRound: true, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "low", label: "嘴圆张大，像说「噢」" },
-  "v-oo": { lipWidth: 0.35, lipHeight: 0.35, lipRound: true, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "back", label: "嘴圆形，舌后部抬高" },
-  // High back /uː/ /ʊ/
-  "v-uu": { lipWidth: 0.25, lipHeight: 0.2, lipRound: true, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: false, tonguePosition: "back", label: "嘴唇收成小圆形，像吹蜡烛" },
-  "v-u": { lipWidth: 0.3, lipHeight: 0.2, lipRound: true, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: false, tonguePosition: "back", label: "嘴稍圆，比 /uː/ 更放松" },
-  // Low back /ɑː/
-  "v-aa": { lipWidth: 0.5, lipHeight: 0.5, lipRound: false, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "low", label: "嘴张到最大，像医生叫你说「啊」" },
+interface DiphthongInfo {
+  type: "diphthong";
+  from: VowelPos;
+  to: VowelPos;
+  label: string;
+}
 
-  // === DIPHTHONGS ===
-  "d-ei": { lipWidth: 0.6, lipHeight: 0.25, lipRound: false, showTopTeeth: true, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "mid", label: "从「诶」滑到「一」，嘴逐渐收小" },
-  "d-ai": { lipWidth: 0.55, lipHeight: 0.4, lipRound: false, showTopTeeth: true, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "low", label: "从大张「啊」滑到「一」" },
-  "d-oi": { lipWidth: 0.4, lipHeight: 0.35, lipRound: true, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "back", label: "从圆嘴「噢」滑到扁嘴「一」" },
-  "d-au": { lipWidth: 0.55, lipHeight: 0.4, lipRound: false, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "low", label: "从大张「啊」滑到圆嘴「乌」" },
-  "d-ou": { lipWidth: 0.4, lipHeight: 0.3, lipRound: true, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "mid", label: "从「欧」滑到圆嘴「乌」" },
-  "d-ie": { lipWidth: 0.55, lipHeight: 0.2, lipRound: false, showTopTeeth: true, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "high-front", label: "从「一」滑到「额」" },
-  "d-ea": { lipWidth: 0.6, lipHeight: 0.25, lipRound: false, showTopTeeth: true, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "mid", label: "从「诶」滑到「额」" },
-  "d-ua": { lipWidth: 0.35, lipHeight: 0.25, lipRound: true, showTopTeeth: false, showBottomTeeth: false, teethOnLip: false, tongueVisible: true, tonguePosition: "back", label: "从圆嘴「乌」滑到「额」" },
+type SoundInfo = ConsonantInfo | VowelInfo | DiphthongInfo;
+
+const sounds: Record<string, SoundInfo> = {
+  // Consonants
+  "c-p":     { type: "consonant", place: "bilabial", label: "双唇" },
+  "c-b":     { type: "consonant", place: "bilabial", label: "双唇" },
+  "c-m":     { type: "consonant", place: "bilabial", nasal: true, label: "双唇(鼻)" },
+  "c-f":     { type: "consonant", place: "labiodental", label: "唇齿" },
+  "c-v":     { type: "consonant", place: "labiodental", label: "唇齿" },
+  "c-theta": { type: "consonant", place: "dental", label: "齿间" },
+  "c-eth":   { type: "consonant", place: "dental", label: "齿间" },
+  "c-t":     { type: "consonant", place: "alveolar", label: "齿龈" },
+  "c-d":     { type: "consonant", place: "alveolar", label: "齿龈" },
+  "c-n":     { type: "consonant", place: "alveolar", nasal: true, label: "齿龈(鼻)" },
+  "c-s":     { type: "consonant", place: "alveolar", label: "齿龈" },
+  "c-z":     { type: "consonant", place: "alveolar", label: "齿龈" },
+  "c-l":     { type: "consonant", place: "alveolar", label: "齿龈" },
+  "c-sh":    { type: "consonant", place: "postalveolar", label: "龈后" },
+  "c-zh":    { type: "consonant", place: "postalveolar", label: "龈后" },
+  "c-ch":    { type: "consonant", place: "postalveolar", label: "龈后" },
+  "c-j":     { type: "consonant", place: "postalveolar", label: "龈后" },
+  "c-r":     { type: "consonant", place: "postalveolar", label: "龈后" },
+  "c-k":     { type: "consonant", place: "velar", label: "软腭" },
+  "c-g":     { type: "consonant", place: "velar", label: "软腭" },
+  "c-ng":    { type: "consonant", place: "velar", nasal: true, label: "软腭(鼻)" },
+  "c-h":     { type: "consonant", place: "glottal", label: "声门" },
+  "c-y":     { type: "consonant", place: "palatal", label: "硬腭" },
+  "c-w":     { type: "consonant", place: "labiovelar", label: "唇+软腭" },
+
+  // Vowels  height: 0=high 1=low, front: 0=front 1=back
+  "v-ii":    { type: "vowel", pos: { height: 0, front: 0 }, label: "高前" },
+  "v-i":     { type: "vowel", pos: { height: 0.15, front: 0.1 }, label: "次高前" },
+  "v-e":     { type: "vowel", pos: { height: 0.35, front: 0.1 }, label: "中前" },
+  "v-ae":    { type: "vowel", pos: { height: 0.8, front: 0.15 }, label: "低前" },
+  "v-uh":    { type: "vowel", pos: { height: 0.5, front: 0.5 }, label: "中央" },
+  "v-schwa": { type: "vowel", pos: { height: 0.45, front: 0.5 }, label: "中央" },
+  "v-er":    { type: "vowel", pos: { height: 0.4, front: 0.45 }, label: "中央卷舌" },
+  "v-uu":    { type: "vowel", pos: { height: 0, front: 1, round: true }, label: "高后圆" },
+  "v-u":     { type: "vowel", pos: { height: 0.15, front: 0.9, round: true }, label: "次高后圆" },
+  "v-oo":    { type: "vowel", pos: { height: 0.4, front: 0.9, round: true }, label: "中后圆" },
+  "v-aa":    { type: "vowel", pos: { height: 0.9, front: 0.85 }, label: "低后" },
+  "v-o":     { type: "vowel", pos: { height: 0.7, front: 0.8, round: true }, label: "低后圆" },
+
+  // Diphthongs
+  "d-ei":  { type: "diphthong", from: { height: 0.35, front: 0.1 }, to: { height: 0.1, front: 0 }, label: "eɪ" },
+  "d-ai":  { type: "diphthong", from: { height: 0.85, front: 0.5 }, to: { height: 0.1, front: 0 }, label: "aɪ" },
+  "d-oi":  { type: "diphthong", from: { height: 0.6, front: 0.85 }, to: { height: 0.1, front: 0 }, label: "ɔɪ" },
+  "d-au":  { type: "diphthong", from: { height: 0.85, front: 0.5 }, to: { height: 0.1, front: 1 }, label: "aʊ" },
+  "d-ou":  { type: "diphthong", from: { height: 0.4, front: 0.5 }, to: { height: 0.1, front: 1 }, label: "oʊ" },
+  "d-ie":  { type: "diphthong", from: { height: 0.1, front: 0 }, to: { height: 0.45, front: 0.5 }, label: "ɪə" },
+  "d-ea":  { type: "diphthong", from: { height: 0.35, front: 0.1 }, to: { height: 0.45, front: 0.5 }, label: "eə" },
+  "d-ua":  { type: "diphthong", from: { height: 0.1, front: 0.9 }, to: { height: 0.45, front: 0.5 }, label: "ʊə" },
 };
 
-// Default fallback
-const defaultMouth: MouthShape = {
-  lipWidth: 0.5, lipHeight: 0.3, lipRound: false,
-  showTopTeeth: false, showBottomTeeth: false, teethOnLip: false,
-  tongueVisible: false, tonguePosition: "none", label: "自然张开",
-};
+// ─── SVG coordinate helpers ───
+// ViewBox: 0 0 300 300. Head faces LEFT.
+// Key anatomical landmarks (approximate):
+
+const P = {
+  // Head profile (facing left)
+  noseTip:       [68, 72],
+  noseBase:      [82, 95],
+  upperLipTop:   [75, 108],
+  upperLipFront: [68, 118],
+  lowerLipFront: [68, 135],
+  lowerLipBot:   [78, 145],
+  chin:          [95, 172],
+  throat:        [160, 195],
+  nape:          [210, 50],
+
+  // Oral cavity
+  upperTeethFront: [82, 112],
+  upperTeethBack:  [100, 112],
+  lowerTeethFront: [84, 138],
+  lowerTeethBack:  [100, 138],
+  alveolarRidge:   [105, 102],
+  hardPalateStart: [110, 90],
+  hardPalateMid:   [140, 78],
+  hardPalateEnd:   [168, 82],
+  velumStart:      [168, 82],
+  velumMid:        [188, 88],
+  velumEnd:        [195, 100],
+  uvula:           [197, 108],
+
+  // Tongue root
+  tongueRoot:      [170, 168],
+  tongueBase:      [100, 158],
+
+  // Nasal cavity
+  nasalFront:      [80, 70],
+  nasalBack:       [185, 65],
+
+  // Pharynx
+  pharynxTop:      [200, 100],
+  pharynxBot:      [195, 175],
+} as const;
+
+// Tongue position: given vowel-like coords (height 0-1, front 0-1), produce a tongue tip point and body curve
+function tonguePath(height: number, front: number): string {
+  // Tongue sits in the oral cavity. Map front/height to positions:
+  // front=0 → tip near alveolar; front=1 → tip retracted toward pharynx
+  // height=0 → body raised toward palate; height=1 → body low (floor)
+
+  const tipX = 88 + front * 80;   // 88 (front) to 168 (back)
+  const tipY = 108 + height * 48;  // 108 (high) to 156 (low)
+
+  // Body humps
+  const humpX = 100 + front * 65;
+  const humpY = 100 + height * 52;  // raised vs low
+
+  // Root always goes to roughly the same place
+  const rootX = 175;
+  const rootY = 165;
+
+  // Base follows floor
+  const baseX = 95;
+  const baseY = 160;
+
+  return `M ${baseX} ${baseY}
+    Q ${tipX - 10} ${tipY + 5} ${tipX} ${tipY}
+    Q ${humpX} ${humpY} ${humpX + 25} ${humpY + 8}
+    Q ${rootX - 10} ${rootY - 15} ${rootX} ${rootY}
+    L ${baseX + 75} ${baseY + 2}
+    Z`;
+}
+
+// Consonant tongue shapes
+function consonantTonguePath(place: ConsonantPlace): string {
+  switch (place) {
+    case "bilabial":
+    case "glottal":
+    case "labiodental":
+      // Neutral tongue
+      return tonguePath(0.55, 0.4);
+    case "dental":
+      // Tongue tip extended to teeth
+      return `M 95 160
+        Q 82 135 78 120
+        Q 82 118 88 116
+        Q 110 110 140 112
+        Q 165 130 175 165
+        L 170 162
+        Z`;
+    case "alveolar":
+      // Tongue tip touches alveolar ridge
+      return `M 95 160
+        Q 90 140 95 120
+        Q 100 105 108 104
+        Q 130 108 155 125
+        Q 170 145 175 165
+        L 170 162
+        Z`;
+    case "postalveolar":
+      // Tongue blade raised to postalveolar region
+      return `M 95 160
+        Q 95 140 100 125
+        Q 112 100 125 95
+        Q 148 100 162 120
+        Q 172 145 175 165
+        L 170 162
+        Z`;
+    case "palatal":
+      // Tongue body raised to hard palate
+      return `M 95 160
+        Q 100 140 108 118
+        Q 125 88 150 86
+        Q 168 92 172 120
+        Q 175 148 175 165
+        L 170 162
+        Z`;
+    case "velar":
+    case "labiovelar":
+      // Back of tongue raised to velum
+      return `M 95 160
+        Q 100 150 110 145
+        Q 125 138 145 118
+        Q 168 90 185 92
+        Q 190 110 185 140
+        Q 180 160 175 165
+        L 170 162
+        Z`;
+    default:
+      return tonguePath(0.55, 0.4);
+  }
+}
+
+// Contact point for consonants
+function contactPoint(place: ConsonantPlace): [number, number] | null {
+  switch (place) {
+    case "bilabial": return [68, 126];
+    case "labiodental": return [78, 118];
+    case "dental": return [80, 118];
+    case "alveolar": return [106, 104];
+    case "postalveolar": return [122, 95];
+    case "palatal": return [148, 86];
+    case "velar":
+    case "labiovelar": return [186, 90];
+    case "glottal": return [195, 150];
+    default: return null;
+  }
+}
+
+// Label position for consonants
+function labelPos(place: ConsonantPlace): { x: number; y: number; anchor: "start" | "middle" | "end"; lineTarget: [number, number] } {
+  switch (place) {
+    case "bilabial": return { x: 35, y: 128, anchor: "end", lineTarget: [65, 126] };
+    case "labiodental": return { x: 38, y: 112, anchor: "end", lineTarget: [75, 116] };
+    case "dental": return { x: 40, y: 105, anchor: "end", lineTarget: [78, 118] };
+    case "alveolar": return { x: 108, y: 55, anchor: "middle", lineTarget: [106, 100] };
+    case "postalveolar": return { x: 128, y: 52, anchor: "middle", lineTarget: [122, 92] };
+    case "palatal": return { x: 155, y: 52, anchor: "middle", lineTarget: [148, 83] };
+    case "velar":
+    case "labiovelar": return { x: 220, y: 72, anchor: "start", lineTarget: [190, 88] };
+    case "glottal": return { x: 228, y: 150, anchor: "start", lineTarget: [198, 150] };
+    default: return { x: 150, y: 50, anchor: "middle", lineTarget: [150, 80] };
+  }
+}
+
+// ─── Component ───
 
 export default function MouthDiagram({ symbolId, size = 200 }: MouthDiagramProps) {
-  const mouth = symbolToMouth[symbolId] || defaultMouth;
-  const w = size;
-  const h = size;
-  const cx = w / 2;
-  const cy = h / 2;
+  const info = sounds[symbolId];
 
-  // Lip dimensions based on parameters
-  const lipW = w * 0.3 + (w * 0.35 * mouth.lipWidth);
-  const lipH = h * 0.05 + (h * 0.35 * mouth.lipHeight);
-  const lipRx = mouth.lipRound ? lipW * 0.5 : lipW * 0.6;
-  const lipRy = lipH * 0.5;
-
-  // Colors
-  const lipColor = "#E8787A";
-  const lipOutline = "#C4494C";
-  const skinColor = "#FDDCB5";
-  const teethColor = "#FFFFFF";
-  const teethOutline = "#DDD";
-  const tongueColor = "#E85D6F";
-  const insideColor = "#8B2040";
-
-  // Teeth dimensions
-  const teethW = lipW * 0.7;
-  const toothW = teethW / 6;
-  const toothH = Math.min(lipH * 0.3, h * 0.06);
-
-  // Tongue
-  const tongueW = lipW * 0.55;
-  const tongueBaseY = cy + lipH * 0.15;
-
-  const renderTongue = () => {
-    if (!mouth.tongueVisible) return null;
-
-    switch (mouth.tonguePosition) {
-      case "tip-out": // /θ/ /ð/ — tongue sticking out between teeth
-        return (
-          <ellipse cx={cx} cy={cy - toothH * 0.3} rx={tongueW * 0.4} ry={toothH * 0.8}
-            fill={tongueColor} stroke="#C44A5C" strokeWidth={1} />
-        );
-      case "tip-up": // /t/ /d/ /n/ /l/ — tongue tip touching top
-        return (
-          <path d={`M ${cx - tongueW * 0.5} ${tongueBaseY + lipH * 0.15}
-            Q ${cx} ${cy - lipH * 0.35} ${cx + tongueW * 0.5} ${tongueBaseY + lipH * 0.15}`}
-            fill={tongueColor} stroke="#C44A5C" strokeWidth={1} />
-        );
-      case "curled": // /r/ /ɜː/ — tongue curled up
-        return (
-          <path d={`M ${cx - tongueW * 0.4} ${tongueBaseY + lipH * 0.1}
-            Q ${cx - tongueW * 0.1} ${cy - lipH * 0.1} ${cx} ${cy - lipH * 0.2}
-            Q ${cx + tongueW * 0.1} ${cy - lipH * 0.1} ${cx + tongueW * 0.4} ${tongueBaseY + lipH * 0.1}`}
-            fill={tongueColor} stroke="#C44A5C" strokeWidth={1} />
-        );
-      case "high-front": // /iː/ /j/ — tongue high and forward
-        return (
-          <path d={`M ${cx - tongueW * 0.5} ${tongueBaseY + lipH * 0.1}
-            Q ${cx} ${cy - lipH * 0.25} ${cx + tongueW * 0.5} ${tongueBaseY + lipH * 0.1}`}
-            fill={tongueColor} stroke="#C44A5C" strokeWidth={1} />
-        );
-      case "back": // /k/ /ɡ/ /uː/ — tongue back raised
-        return (
-          <ellipse cx={cx} cy={tongueBaseY + lipH * 0.05} rx={tongueW * 0.45} ry={lipH * 0.15}
-            fill={tongueColor} stroke="#C44A5C" strokeWidth={1} />
-        );
-      case "low": // /æ/ /ɑː/ — tongue flat and low
-        return (
-          <ellipse cx={cx} cy={tongueBaseY + lipH * 0.2} rx={tongueW * 0.5} ry={lipH * 0.08}
-            fill={tongueColor} stroke="#C44A5C" strokeWidth={1} />
-        );
-      case "mid": // /e/ /ə/ — tongue mid position
-        return (
-          <ellipse cx={cx} cy={tongueBaseY + lipH * 0.1} rx={tongueW * 0.4} ry={lipH * 0.1}
-            fill={tongueColor} stroke="#C44A5C" strokeWidth={1} />
-        );
-      default:
-        return null;
-    }
+  const colors = {
+    headOutline: "#B0ADA8",
+    skinFill: "#F5EDE3",
+    palate: "#E8DDD0",
+    tongue: "#E8787A",
+    tongueDark: "#C4494C",
+    teeth: "#FFFFFF",
+    teethBorder: "#CCCCCC",
+    inside: "#F9F3EC",
+    nasal: "#F0EBE4",
+    contact: "#E53935",
+    airBlue: "#5BA4E6",
+    airPurple: "#9B7BDB",
+    label: "#555555",
+    leaderLine: "#999999",
   };
 
-  const renderTeeth = () => {
-    const teeth: React.ReactNode[] = [];
-    const startX = cx - teethW / 2;
+  const isNasal = info?.type === "consonant" && info.nasal;
+  const isBilabial = info?.type === "consonant" && info.place === "bilabial";
+  const isLabiodental = info?.type === "consonant" && info.place === "labiodental";
+  const roundLips = info?.type === "consonant" && (info.place === "labiovelar") ||
+    (info?.type === "vowel" && info.pos.round) ||
+    (info?.type === "diphthong" && info.to.round);
 
-    if (mouth.showTopTeeth) {
-      for (let i = 0; i < 6; i++) {
-        const x = startX + i * toothW;
-        const y = mouth.teethOnLip ? cy - lipH * 0.1 : cy - lipH * 0.35;
-        teeth.push(
-          <rect key={`top-${i}`} x={x + 1} y={y} width={toothW - 2} height={toothH}
-            rx={2} fill={teethColor} stroke={teethOutline} strokeWidth={0.5} />
-        );
-      }
-    }
-
-    if (mouth.showBottomTeeth) {
-      for (let i = 0; i < 6; i++) {
-        const x = startX + i * toothW;
-        const y = cy + lipH * 0.15;
-        teeth.push(
-          <rect key={`bot-${i}`} x={x + 1} y={y} width={toothW - 2} height={toothH}
-            rx={2} fill={teethColor} stroke={teethOutline} strokeWidth={0.5} />
-        );
-      }
-    }
-
-    return teeth;
-  };
-
-  const renderAirflow = () => {
-    if (!mouth.airflow) return null;
-    const arrowColor = mouth.airflow === "nose" ? "#9B7BDB" : "#5BA4E6";
-
-    if (mouth.airflow === "nose") {
-      return (
-        <g>
-          <path d={`M ${cx - 3} ${cy - lipH * 0.5 - 8} L ${cx - 3} ${cy - lipH * 0.5 - 25}`}
-            stroke={arrowColor} strokeWidth={2} markerEnd="url(#arrowNose)" />
-          <path d={`M ${cx + 3} ${cy - lipH * 0.5 - 8} L ${cx + 3} ${cy - lipH * 0.5 - 25}`}
-            stroke={arrowColor} strokeWidth={2} />
-          <text x={cx} y={cy - lipH * 0.5 - 28} textAnchor="middle" fontSize={8} fill={arrowColor} fontWeight="bold">👃</text>
-        </g>
-      );
-    }
-
-    if (mouth.airflow === "sides") {
-      return (
-        <g>
-          <path d={`M ${cx - lipW * 0.3} ${cy} L ${cx - lipW * 0.55} ${cy}`}
-            stroke={arrowColor} strokeWidth={2} markerEnd="url(#arrowOut)" />
-          <path d={`M ${cx + lipW * 0.3} ${cy} L ${cx + lipW * 0.55} ${cy}`}
-            stroke={arrowColor} strokeWidth={2} markerEnd="url(#arrowOut)" />
-        </g>
-      );
-    }
-
-    // "out" — forward airflow
-    return (
-      <path d={`M ${cx} ${cy + lipH * 0.3} L ${cx} ${cy + lipH * 0.3 + 18}`}
-        stroke={arrowColor} strokeWidth={2} markerEnd="url(#arrowOut)" />
-    );
-  };
-
-  // Closed mouth (bilabials)
-  if (mouth.lipHeight === 0) {
-    return (
-      <div className="flex flex-col items-center">
-        <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
-          <defs>
-            <marker id="arrowNose" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-              <path d="M0,0 L0,6 L6,3 Z" fill="#9B7BDB" transform="rotate(-90, 3, 3)" />
-            </marker>
-          </defs>
-          {/* Face circle */}
-          <circle cx={cx} cy={cy} r={w * 0.4} fill={skinColor} stroke="#E8C9A0" strokeWidth={1.5} />
-          {/* Closed lips — horizontal line */}
-          <path d={`M ${cx - lipW * 0.45} ${cy}
-            Q ${cx - lipW * 0.2} ${cy - 3} ${cx} ${cy}
-            Q ${cx + lipW * 0.2} ${cy - 3} ${cx + lipW * 0.45} ${cy}`}
-            fill="none" stroke={lipOutline} strokeWidth={2.5} strokeLinecap="round" />
-          {/* Upper lip curve */}
-          <path d={`M ${cx - lipW * 0.45} ${cy}
-            Q ${cx - lipW * 0.15} ${cy - 6} ${cx} ${cy - 3}
-            Q ${cx + lipW * 0.15} ${cy - 6} ${cx + lipW * 0.45} ${cy}`}
-            fill={lipColor} stroke={lipOutline} strokeWidth={1} />
-          {/* Lower lip curve */}
-          <path d={`M ${cx - lipW * 0.45} ${cy}
-            Q ${cx} ${cy + 5} ${cx + lipW * 0.45} ${cy}`}
-            fill={lipColor} stroke={lipOutline} strokeWidth={1} />
-          {renderAirflow()}
-        </svg>
-        <span className="text-xs text-[#7C83FD] font-medium mt-1 text-center max-w-[160px]">{mouth.label}</span>
-      </div>
-    );
-  }
+  // Determine velum position (lowered for nasals)
+  const velumLowered = isNasal;
 
   return (
     <div className="flex flex-col items-center">
-      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 300 300"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ overflow: "visible" }}
+      >
         <defs>
-          <marker id="arrowOut" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L6,3 Z" fill="#5BA4E6" />
+          <marker id="arrowBlue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill={colors.airBlue} />
           </marker>
-          <marker id="arrowNose" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-            <path d="M0,6 L3,0 L6,6 Z" fill="#9B7BDB" />
+          <marker id="arrowPurple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill={colors.airPurple} />
+          </marker>
+          <marker id="arrowRed" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
+            <path d="M0,0 L5,2.5 L0,5 Z" fill={colors.contact} />
           </marker>
         </defs>
-        {/* Face circle */}
-        <circle cx={cx} cy={cy} r={w * 0.4} fill={skinColor} stroke="#E8C9A0" strokeWidth={1.5} />
-        {/* Mouth opening (dark inside) */}
-        <ellipse cx={cx} cy={cy} rx={lipRx} ry={lipRy}
-          fill={insideColor} />
-        {/* Tongue */}
-        {renderTongue()}
-        {/* Teeth */}
-        {renderTeeth()}
-        {/* Lips — outer ring */}
-        <ellipse cx={cx} cy={cy} rx={lipRx + 4} ry={lipRy + 4}
-          fill="none" stroke={lipColor} strokeWidth={8} opacity={0.8} />
-        <ellipse cx={cx} cy={cy} rx={lipRx + 4} ry={lipRy + 4}
-          fill="none" stroke={lipOutline} strokeWidth={1.5} />
-        {/* Upper lip cupid's bow */}
-        {!mouth.lipRound && (
-          <path d={`M ${cx - lipRx * 0.3} ${cy - lipRy - 2}
-            Q ${cx} ${cy - lipRy - 6} ${cx + lipRx * 0.3} ${cy - lipRy - 2}`}
-            fill={lipColor} stroke={lipOutline} strokeWidth={0.5} />
+
+        {/* ── Nasal cavity ── */}
+        <path
+          d={`M 82 70 Q 85 58 110 55 Q 150 50 185 55 Q 198 58 200 70 L 200 80
+              Q 185 75 168 82 L 110 90 Q 100 92 95 88 Q 85 82 82 70 Z`}
+          fill={colors.nasal}
+          stroke={colors.headOutline}
+          strokeWidth={1.2}
+          opacity={0.7}
+        />
+
+        {/* ── Hard palate ── */}
+        <path
+          d={`M 100 108 Q 105 98 115 92 Q 140 78 168 82`}
+          fill="none"
+          stroke={colors.headOutline}
+          strokeWidth={2.5}
+          strokeLinecap="round"
+        />
+        {/* Palate fill (roof of mouth) */}
+        <path
+          d={`M 100 108 Q 105 98 115 92 Q 140 78 168 82
+              Q 155 85 140 88 Q 120 96 108 105 Z`}
+          fill={colors.palate}
+          opacity={0.6}
+        />
+
+        {/* ── Alveolar ridge (bump) ── */}
+        <circle cx={106} cy={103} r={4} fill={colors.palate} stroke={colors.headOutline} strokeWidth={1.2} />
+
+        {/* ── Soft palate / Velum ── */}
+        {velumLowered ? (
+          <path
+            d={`M 168 82 Q 180 88 190 100 Q 195 110 193 118 Q 190 125 186 128`}
+            fill="none"
+            stroke={colors.headOutline}
+            strokeWidth={2.5}
+            strokeLinecap="round"
+          />
+        ) : (
+          <path
+            d={`M 168 82 Q 182 86 190 92 Q 198 100 197 108`}
+            fill="none"
+            stroke={colors.headOutline}
+            strokeWidth={2.5}
+            strokeLinecap="round"
+          />
         )}
-        {/* Airflow arrows */}
-        {renderAirflow()}
+
+        {/* ── Uvula ── */}
+        {!velumLowered && (
+          <ellipse cx={197} cy={112} rx={3} ry={5} fill={colors.palate} stroke={colors.headOutline} strokeWidth={1} />
+        )}
+        {velumLowered && (
+          <ellipse cx={186} cy={132} rx={3} ry={5} fill={colors.palate} stroke={colors.headOutline} strokeWidth={1} />
+        )}
+
+        {/* ── Pharynx (back wall) ── */}
+        <path
+          d={`M 200 80 Q 210 100 210 130 Q 208 160 200 180`}
+          fill="none"
+          stroke={colors.headOutline}
+          strokeWidth={1.8}
+        />
+
+        {/* ── Head profile outline ── */}
+        <path
+          d={`M 68 55
+              Q 62 65 65 72
+              L 68 72
+              Q 60 82 62 92
+              L 82 95
+              L 75 108
+              ${isBilabial
+                ? `Q 68 112 68 118 L 68 118 Q 68 125 68 130 L 68 135`
+                : isLabiodental
+                  ? `Q 68 112 68 116 L 68 118 Q 68 122 70 128 Q 72 132 68 135`
+                  : `Q 68 112 65 118 Q 62 125 65 135`
+              }
+              Q 72 142 78 145
+              Q 88 158 95 172
+              Q 110 190 140 195
+              Q 170 198 200 180`}
+          fill="none"
+          stroke={colors.headOutline}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        {/* ── Forehead/top of head to nape (light, for context) ── */}
+        <path
+          d={`M 68 55 Q 75 25 120 15 Q 170 10 210 30 Q 230 45 225 70 Q 220 90 210 100`}
+          fill="none"
+          stroke={colors.headOutline}
+          strokeWidth={1.2}
+          opacity={0.4}
+        />
+
+        {/* ── Upper teeth ── */}
+        <rect x={82} y={110} width={6} height={12} rx={1}
+          fill={colors.teeth} stroke={colors.teethBorder} strokeWidth={0.8} />
+        <rect x={89} y={111} width={5} height={10} rx={1}
+          fill={colors.teeth} stroke={colors.teethBorder} strokeWidth={0.8} />
+
+        {/* ── Lower teeth ── */}
+        <rect x={84} y={132} width={5} height={10} rx={1}
+          fill={colors.teeth} stroke={colors.teethBorder} strokeWidth={0.8} />
+        <rect x={90} y={133} width={5} height={9} rx={1}
+          fill={colors.teeth} stroke={colors.teethBorder} strokeWidth={0.8} />
+
+        {/* ── Floor of mouth ── */}
+        <path
+          d={`M 95 160 Q 120 168 150 170 Q 175 170 195 165 Q 202 175 200 180`}
+          fill="none"
+          stroke={colors.headOutline}
+          strokeWidth={1.5}
+          opacity={0.5}
+        />
+
+        {/* ── Tongue ── */}
+        {info?.type === "consonant" && (
+          <path
+            d={consonantTonguePath(info.place)}
+            fill={colors.tongue}
+            stroke={colors.tongueDark}
+            strokeWidth={1.5}
+            opacity={0.85}
+          />
+        )}
+        {info?.type === "vowel" && (
+          <path
+            d={tonguePath(info.pos.height, info.pos.front)}
+            fill={colors.tongue}
+            stroke={colors.tongueDark}
+            strokeWidth={1.5}
+            opacity={0.85}
+          />
+        )}
+        {info?.type === "diphthong" && (
+          <>
+            {/* Show "from" position tongue in lighter shade */}
+            <path
+              d={tonguePath(info.from.height, info.from.front)}
+              fill={colors.tongue}
+              stroke={colors.tongueDark}
+              strokeWidth={1}
+              opacity={0.35}
+              strokeDasharray="3 2"
+            />
+            {/* Show "to" position tongue solid */}
+            <path
+              d={tonguePath(info.to.height, info.to.front)}
+              fill={colors.tongue}
+              stroke={colors.tongueDark}
+              strokeWidth={1.5}
+              opacity={0.85}
+            />
+          </>
+        )}
+        {!info && (
+          <path
+            d={tonguePath(0.55, 0.4)}
+            fill={colors.tongue}
+            stroke={colors.tongueDark}
+            strokeWidth={1.5}
+            opacity={0.85}
+          />
+        )}
+
+        {/* ── Contact point for consonants ── */}
+        {info?.type === "consonant" && (() => {
+          const cp = contactPoint(info.place);
+          if (!cp) return null;
+          return (
+            <circle cx={cp[0]} cy={cp[1]} r={4}
+              fill={colors.contact} opacity={0.7} />
+          );
+        })()}
+
+        {/* ── Bilabial: lips pressed together indicator ── */}
+        {isBilabial && (
+          <line x1={63} y1={126} x2={73} y2={126}
+            stroke={colors.contact} strokeWidth={3} strokeLinecap="round" />
+        )}
+
+        {/* ── Labiodental: upper teeth on lower lip ── */}
+        {isLabiodental && (
+          <path d="M 82 116 L 78 122 L 86 122 Z"
+            fill={colors.teeth} stroke={colors.teethBorder} strokeWidth={0.8} />
+        )}
+
+        {/* ── Rounded lips indicator ── */}
+        {roundLips && (
+          <ellipse cx={64} cy={126} rx={3} ry={8}
+            fill="none" stroke={colors.contact} strokeWidth={1.5} opacity={0.6} />
+        )}
+
+        {/* ── Nasal airflow (for nasals) ── */}
+        {isNasal && (
+          <g>
+            <path
+              d="M 140 60 Q 120 45 95 42 L 70 48"
+              fill="none"
+              stroke={colors.airPurple}
+              strokeWidth={2}
+              strokeDasharray="4 3"
+              markerEnd="url(#arrowPurple)"
+            />
+            <text x={105} y={40} fontSize={9} fill={colors.airPurple} textAnchor="middle"
+              fontFamily="system-ui, sans-serif">鼻腔气流</text>
+          </g>
+        )}
+
+        {/* ── Oral airflow (for non-nasals) ── */}
+        {info?.type === "consonant" && !isNasal && info.place !== "glottal" && (
+          <path
+            d="M 100 126 Q 80 126 55 126"
+            fill="none"
+            stroke={colors.airBlue}
+            strokeWidth={1.8}
+            strokeDasharray="4 3"
+            markerEnd="url(#arrowBlue)"
+            opacity={0.7}
+          />
+        )}
+
+        {/* ── Glottal airflow ── */}
+        {info?.type === "consonant" && info.place === "glottal" && (
+          <path
+            d="M 200 170 Q 180 150 140 130 Q 100 120 55 126"
+            fill="none"
+            stroke={colors.airBlue}
+            strokeWidth={1.8}
+            strokeDasharray="4 3"
+            markerEnd="url(#arrowBlue)"
+            opacity={0.7}
+          />
+        )}
+
+        {/* ── Labels with leader lines ── */}
+        {info?.type === "consonant" && (() => {
+          const lp = labelPos(info.place);
+          return (
+            <g>
+              <line
+                x1={lp.lineTarget[0]} y1={lp.lineTarget[1]}
+                x2={lp.x} y2={lp.y - 4}
+                stroke={colors.leaderLine}
+                strokeWidth={0.8}
+                strokeDasharray="2 2"
+              />
+              <text
+                x={lp.x} y={lp.y}
+                textAnchor={lp.anchor}
+                fontSize={11}
+                fill={colors.label}
+                fontWeight={600}
+                fontFamily="system-ui, sans-serif"
+              >
+                {info.label}
+              </text>
+            </g>
+          );
+        })()}
+
+        {/* ── Vowel position indicator ── */}
+        {info?.type === "vowel" && (() => {
+          const tx = 88 + info.pos.front * 80;
+          const ty = 108 + info.pos.height * 48;
+          return (
+            <g>
+              <circle cx={tx} cy={ty - 10} r={5}
+                fill={colors.contact} opacity={0.5} />
+              <text x={tx} y={ty - 22}
+                textAnchor="middle" fontSize={10} fill={colors.label}
+                fontWeight={600} fontFamily="system-ui, sans-serif">
+                {info.label}
+              </text>
+            </g>
+          );
+        })()}
+
+        {/* ── Diphthong arrow ── */}
+        {info?.type === "diphthong" && (() => {
+          const fx = 88 + info.from.front * 80;
+          const fy = 98 + info.from.height * 48;
+          const tx = 88 + info.to.front * 80;
+          const ty = 98 + info.to.height * 48;
+          const mx = (fx + tx) / 2;
+          const my = (fy + ty) / 2 - 15;
+          return (
+            <g>
+              <circle cx={fx} cy={fy} r={4} fill={colors.contact} opacity={0.5} />
+              <path
+                d={`M ${fx} ${fy} Q ${mx} ${my} ${tx} ${ty}`}
+                fill="none"
+                stroke={colors.contact}
+                strokeWidth={1.8}
+                strokeDasharray="4 3"
+                markerEnd="url(#arrowRed)"
+              />
+              <text x={mx} y={my - 8}
+                textAnchor="middle" fontSize={10} fill={colors.label}
+                fontWeight={600} fontFamily="system-ui, sans-serif">
+                {info.label}
+              </text>
+            </g>
+          );
+        })()}
+
+        {/* ── Static anatomy labels (small, subtle) ── */}
+        <g opacity={0.5} fontFamily="system-ui, sans-serif" fontSize={8} fill={colors.label}>
+          <text x={138} y={72}>硬腭</text>
+          <text x={188} y={80}>软腭</text>
+          <text x={130} y={62}>鼻腔</text>
+          <text x={215} y={140}>咽</text>
+        </g>
+
       </svg>
-      <span className="text-xs text-[#7C83FD] font-medium mt-1 text-center max-w-[160px]">{mouth.label}</span>
     </div>
   );
 }
