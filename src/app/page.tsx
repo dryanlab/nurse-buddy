@@ -42,7 +42,7 @@ export default function LandingPage() {
           transition={{ delay: 0.2 }}
           className="text-3xl font-bold text-[#2D2D2D] mb-3"
         >
-          English Buddy
+          Nurse Buddy
         </motion.h1>
 
         <motion.p
@@ -51,7 +51,7 @@ export default function LandingPage() {
           transition={{ delay: 0.3 }}
           className="text-lg text-[#6B7280] mb-2"
         >
-          你的英语发音伙伴
+          护士英语学习伙伴
         </motion.p>
 
         <motion.p

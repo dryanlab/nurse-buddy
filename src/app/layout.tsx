@@ -3,13 +3,13 @@ import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-context";
 
 export const metadata: Metadata = {
-  title: "English Buddy — 你的英语发音伙伴",
+  title: "Nurse Buddy — 护士英语学习伙伴",
   description: "AI 驱动的英语发音练习，专为在美华人护理从业者设计",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "English Buddy",
+    title: "Nurse Buddy",
   },
 };
 

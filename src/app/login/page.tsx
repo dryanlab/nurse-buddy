@@ -50,7 +50,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="text-6xl mb-4">🩺</div>
-          <h1 className="text-3xl font-bold text-[#2D2D2D]">English Buddy</h1>
+          <h1 className="text-3xl font-bold text-[#2D2D2D]">Nurse Buddy</h1>
           <p className="mt-2 text-[#6B7280]">Welcome back!</p>
           <p className="text-sm text-[#9CA3AF]">欢迎回来！</p>
         </div>

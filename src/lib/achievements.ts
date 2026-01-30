@@ -1,4 +1,4 @@
-// Achievement system for English Buddy
+// Achievement system for Nurse Buddy
 
 import { syncColumnToCloud, loadColumnFromCloud } from "./cloud-sync";
 
