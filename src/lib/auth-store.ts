@@ -10,7 +10,7 @@ export interface UserProfile {
   createdAt: string;
 }
 
-const AUTH_KEY = "english-buddy-user";
+const AUTH_KEY = "nurse-buddy-user";
 
 const AVATARS = ["🦊", "🐱", "🐼", "🦄", "🐲", "🦋", "🐬", "🌟"];
 
