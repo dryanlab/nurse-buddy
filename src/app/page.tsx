@@ -18,9 +18,30 @@ export default function LandingPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoggedIn()) {
-      router.replace("/dashboard");
+    async function check() {
+      if (isLoggedIn()) { router.replace("/dashboard"); return; }
+      // Handle OAuth callback that might land on root
+      const hasAuthParams = window.location.hash.includes("access_token") ||
+        window.location.search.includes("code=");
+      if (hasAuthParams) {
+        const { getSupabase } = await import("@/lib/supabase");
+        const supabase = getSupabase();
+        if (supabase) {
+          for (let i = 0; i < 10; i++) {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              const { ensureProfile } = await import("@/lib/auth-store");
+              const { hasProfile, needsSetup } = await ensureProfile();
+              if (hasProfile) { router.replace("/dashboard"); return; }
+              if (needsSetup) { router.replace("/complete-profile"); return; }
+              break;
+            }
+            await new Promise(r => setTimeout(r, 500));
+          }
+        }
+      }
     }
+    check();
   }, [router]);
 
   return (

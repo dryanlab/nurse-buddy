@@ -24,16 +24,21 @@ export default function LoginPage() {
         const { getSupabase } = await import("@/lib/supabase");
         const supabase = getSupabase();
         if (supabase) {
-          let { data: { session } } = await supabase.auth.getSession();
-          if (!session) {
+          // Check if URL has OAuth callback params
+          const hasAuthParams = window.location.hash.includes("access_token") ||
+            window.location.search.includes("code=");
+          // If OAuth callback, wait longer for Supabase to process
+          const maxRetries = hasAuthParams ? 10 : 2;
+          for (let i = 0; i < maxRetries; i++) {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              const { ensureProfile } = await import("@/lib/auth-store");
+              const { hasProfile, needsSetup } = await ensureProfile();
+              if (hasProfile) { router.replace("/dashboard"); return; }
+              if (needsSetup) { router.replace("/complete-profile"); return; }
+              break;
+            }
             await new Promise(r => setTimeout(r, 500));
-            ({ data: { session } } = await supabase.auth.getSession());
-          }
-          if (session) {
-            const { ensureProfile } = await import("@/lib/auth-store");
-            const { hasProfile, needsSetup } = await ensureProfile();
-            if (hasProfile) { router.replace("/dashboard"); return; }
-            if (needsSetup) { router.replace("/complete-profile"); return; }
           }
         }
       }
