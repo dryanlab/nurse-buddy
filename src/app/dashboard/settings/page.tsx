@@ -4,6 +4,7 @@ import ThemePicker from "@/components/theme-picker";
 
 export default function SettingsPage() {
   const resetAssessment = () => {
+    localStorage.removeItem("nurse-buddy-assessed");
     localStorage.removeItem("english-buddy-assessed");
     localStorage.removeItem("english-buddy-level");
     window.location.href = "/dashboard";

@@ -97,9 +97,20 @@ export default function SkillAssessment({ onComplete }: Props) {
           我们会根据你的水平定制学习内容，让练习更有效！
         </p>
         <button
-          onClick={() => {
-            localStorage.setItem("english-buddy-level", level.label.toLowerCase());
-            localStorage.setItem("english-buddy-assessed", "true");
+          onClick={async () => {
+            localStorage.setItem("nurse-buddy-level", level.label.toLowerCase());
+            localStorage.setItem("nurse-buddy-assessed", "true");
+            // Save to cloud so assessment persists across devices
+            try {
+              const { getSupabase } = await import("@/lib/supabase");
+              const supabase = getSupabase();
+              if (supabase) {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user) {
+                  await supabase.from("profiles").update({ assessed: true }).eq("id", session.user.id);
+                }
+              }
+            } catch {}
             onComplete(level.label.toLowerCase());
           }}
           className="bg-[#FF6B6B] text-white px-8 py-3 rounded-full font-semibold text-lg active:scale-95 transition-transform"

@@ -38,7 +38,30 @@ export default function DashboardPage() {
 
   useEffect(() => {
     refreshState();
-    setAssessed(localStorage.getItem("english-buddy-assessed") === "true");
+    // Check assessment status: localStorage first, then cloud
+    const localAssessed = localStorage.getItem("nurse-buddy-assessed") === "true" ||
+      localStorage.getItem("english-buddy-assessed") === "true"; // backward compat
+    if (localAssessed) {
+      setAssessed(true);
+    } else {
+      // Check cloud
+      (async () => {
+        try {
+          const { getSupabase } = await import("@/lib/supabase");
+          const supabase = getSupabase();
+          if (supabase) {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+              const { data } = await supabase.from("profiles").select("assessed").eq("id", session.user.id).single();
+              if (data?.assessed) {
+                localStorage.setItem("nurse-buddy-assessed", "true");
+                setAssessed(true);
+              }
+            }
+          }
+        } catch {}
+      })();
+    }
 
     // Mark daily login goal
     markDailyLogin();
