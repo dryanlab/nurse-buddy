@@ -219,9 +219,19 @@ export default function PhoneticsPage() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
           {/* Symbol big display */}
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#F3E8E2] text-center">
-            <div className="text-5xl font-mono font-bold text-[#FF6B6B] mb-2">{selected.symbol}</div>
-            <div className="text-base text-[#4B5563] leading-relaxed mt-1">{selected.description}</div>
-            {/* Listen via example words below */}
+            <div className="text-5xl font-mono font-bold text-[#FF6B6B] mb-1">{selected.symbol}</div>
+            {/* First example word as pronunciation reference */}
+            {selected.examples[0] && (
+              <button
+                onClick={() => handleSpeak(selected.examples[0].word)}
+                className="mt-2 inline-flex items-center gap-2 text-lg active:scale-95 transition-transform"
+              >
+                <span>{highlightWord(selected.examples[0].word, selected.id)}</span>
+                <span className="text-[#9CA3AF] font-mono text-sm">{selected.examples[0].phonetic}</span>
+                <Volume2 className="w-4 h-4 text-[#6BCB9E]" />
+              </button>
+            )}
+            <div className="text-sm text-[#4B5563] leading-relaxed mt-2">{selected.description}</div>
             <div className="flex justify-center gap-2 mt-3">
               <span
                 className={`text-xs px-3 py-1 rounded-full font-medium ${
