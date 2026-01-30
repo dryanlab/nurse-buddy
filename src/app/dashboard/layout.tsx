@@ -49,9 +49,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       if (isLoggedIn()) {
         const u = getUser();
         setUser(u);
-        // Load from cloud in background (updates localStorage if cloud is newer)
         loadCloudData().then(() => {
-          // Refresh UI with potentially updated data
           const p = getProgress();
           setLevelInfo(getLevelInfo(p.xp));
           setCoins(getCoinState().coins);
@@ -64,6 +62,54 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }
       // Then check Supabase session (for Google OAuth callback)
       const { getSessionUser, ensureProfile } = await import("@/lib/auth-store");
+      const { getSupabase } = await import("@/lib/supabase");
+      const supabase = getSupabase();
+
+      // Listen for auth state changes (handles OAuth callback token processing)
+      if (supabase) {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          if (event === "SIGNED_IN" && session?.user) {
+            const { ensureProfile: ep } = await import("@/lib/auth-store");
+            const { hasProfile, needsSetup } = await ep();
+            if (needsSetup) {
+              router.replace("/complete-profile");
+            } else if (hasProfile) {
+              const su = await getSessionUser();
+              if (su) {
+                setUser(su);
+                const p = getProgress();
+                setLevelInfo(getLevelInfo(p.xp));
+                setCoins(getCoinState().coins);
+                setReady(true);
+              }
+            }
+            subscription.unsubscribe();
+          }
+        });
+        // Timeout: if no auth event in 3s, redirect to login
+        setTimeout(async () => {
+          if (!ready) {
+            const su = await getSessionUser();
+            if (su) {
+              setUser(su);
+              const p = getProgress();
+              setLevelInfo(getLevelInfo(p.xp));
+              setCoins(getCoinState().coins);
+              setReady(true);
+            } else {
+              const { needsSetup } = await ensureProfile();
+              if (needsSetup) {
+                router.replace("/complete-profile");
+              } else {
+                router.replace("/login");
+              }
+            }
+            subscription.unsubscribe();
+          }
+        }, 3000);
+        return;
+      }
+
       const sessionUser = await getSessionUser();
       if (sessionUser) {
         setUser(sessionUser);
@@ -73,13 +119,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         setReady(true);
         return;
       }
-      // Check if we need profile setup (Google OAuth first time)
       const { needsSetup } = await ensureProfile();
       if (needsSetup) {
         router.replace("/complete-profile");
         return;
       }
-      // Not logged in at all
       router.replace("/login");
     }
     init();
