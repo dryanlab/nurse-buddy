@@ -26,12 +26,12 @@ async function loadCloudData() {
 const navItems = [
   { href: "/dashboard", icon: Home, label: "首页" },
   { href: "/dashboard/review", icon: Brain, label: "复习" },
-  { href: "/dashboard/pronunciation", icon: Mic, label: "发音" },
   { href: "/dashboard/phonetics", icon: Languages, label: "音标" },
-  { href: "/dashboard/conversation", icon: MessageCircle, label: "对话" },
+  { href: "/dashboard/pronunciation", icon: Mic, label: "发音" },
   { href: "/dashboard/vocabulary", icon: BookOpen, label: "词汇" },
-  { href: "/dashboard/shop", icon: ShoppingBag, label: "商店" },
+  { href: "/dashboard/conversation", icon: MessageCircle, label: "对话" },
   { href: "/dashboard/achievements", icon: Trophy, label: "成就" },
+  { href: "/dashboard/shop", icon: ShoppingBag, label: "商店" },
   { href: "/dashboard/settings", icon: Settings, label: "设置" },
 ];
 
