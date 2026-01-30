@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { getUser, registerUser, signUp, getAvatarOptions } from "@/lib/auth-store";
+import { getUser, registerUser, signUp, getAvatarOptions, ensureProfile } from "@/lib/auth-store";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 
@@ -20,7 +20,14 @@ export default function RegisterPage() {
 
   useEffect(() => {
     const user = getUser();
-    if (user) router.replace("/dashboard");
+    if (user) { router.replace("/dashboard"); return; }
+    // Check Supabase session (Google OAuth callback)
+    if (isSupabaseConfigured) {
+      ensureProfile().then(({ hasProfile, needsSetup }) => {
+        if (hasProfile) router.replace("/dashboard");
+        else if (needsSetup) router.replace("/complete-profile");
+      });
+    }
   }, [router]);
 
   async function handleRegister() {
