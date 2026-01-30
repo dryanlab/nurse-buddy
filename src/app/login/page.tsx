@@ -27,9 +27,8 @@ export default function LoginPage() {
 
       // DEBUG: show what URL we landed on
       const fullUrl = window.location.href;
-      if (fullUrl.includes("code=") || fullUrl.includes("access_token") || fullUrl.includes("error")) {
-        alert("OAuth callback URL:\n" + fullUrl);
-      }
+      const oauthUrl = (window as any).__OAUTH_URL || "";
+      alert("Current URL:\n" + fullUrl + "\n\nCaptured OAuth URL:\n" + (oauthUrl || "(none)"));
 
       // Handle PKCE OAuth callback: exchange code for session
       const params = new URLSearchParams(window.location.search);
