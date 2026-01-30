@@ -18,20 +18,23 @@ export type VocabCategory = {
 };
 
 export const vocabCategories: VocabCategory[] = [
-  { id: "body", name: "身体部位", nameEn: "Body Parts", icon: "🦴", count: 120 },
-  { id: "symptoms", name: "症状", nameEn: "Symptoms", icon: "🤒", count: 120 },
-  { id: "medications", name: "药物", nameEn: "Medications", icon: "💊", count: 120 },
-  { id: "equipment", name: "医疗器械", nameEn: "Medical Equipment", icon: "🩺", count: 120 },
-  { id: "phrases", name: "常用短语", nameEn: "Common Phrases", icon: "💬", count: 100 },
-  { id: "procedures", name: "操作与手术", nameEn: "Procedures & Surgery", icon: "🔬", count: 100 },
-  { id: "conditions", name: "疾病与诊断", nameEn: "Conditions & Diagnoses", icon: "📋", count: 120 },
-  { id: "vitals", name: "生命体征", nameEn: "Vital Signs & Labs", icon: "📊", count: 80 },
-  { id: "departments", name: "科室与人员", nameEn: "Departments & Staff", icon: "🏥", count: 80 },
-  { id: "daily", name: "日常护理", nameEn: "Daily Care", icon: "🛏️", count: 80 },
-  { id: "emergency", name: "急救", nameEn: "Emergency", icon: "🚑", count: 80 },
-  { id: "nutrition", name: "营养与饮食", nameEn: "Nutrition & Diet", icon: "🍎", count: 60 },
-  { id: "mental", name: "心理健康", nameEn: "Mental Health", icon: "🧠", count: 60 },
-  { id: "compound", name: "复合医学术语", nameEn: "Compound Medical Terms", icon: "🔗", count: 80 },
+  { id: "body", name: "身体部位", nameEn: "Body Parts", icon: "🦴", count: 280 },
+  { id: "symptoms", name: "症状", nameEn: "Symptoms", icon: "🤒", count: 253 },
+  { id: "medications", name: "药物", nameEn: "Medications", icon: "💊", count: 280 },
+  { id: "equipment", name: "医疗器械", nameEn: "Medical Equipment", icon: "🩺", count: 135 },
+  { id: "procedures", name: "操作与手术", nameEn: "Procedures & Surgery", icon: "🔬", count: 159 },
+  { id: "conditions", name: "疾病与诊断", nameEn: "Conditions & Diagnoses", icon: "📋", count: 100 },
+  { id: "emergency", name: "急救", nameEn: "Emergency", icon: "🚑", count: 130 },
+  { id: "mental", name: "心理健康", nameEn: "Mental Health", icon: "🧠", count: 125 },
+  { id: "daily", name: "日常护理", nameEn: "Daily Care", icon: "🛏️", count: 115 },
+  { id: "vitals", name: "生命体征", nameEn: "Vital Signs & Labs", icon: "📊", count: 74 },
+  { id: "anatomy", name: "解剖学", nameEn: "Anatomy", icon: "🫀", count: 65 },
+  { id: "nursing", name: "护理术语", nameEn: "Nursing Terms", icon: "👩‍⚕️", count: 65 },
+  { id: "pharmacy", name: "药学", nameEn: "Pharmacy", icon: "🏪", count: 65 },
+  { id: "lab", name: "实验室", nameEn: "Lab & Tests", icon: "🔬", count: 65 },
+  { id: "diseases", name: "疾病", nameEn: "Diseases", icon: "🦠", count: 15 },
+  { id: "phrases", name: "常用短语", nameEn: "Common Phrases", icon: "💬", count: 5 },
+  { id: "departments", name: "科室与人员", nameEn: "Departments & Staff", icon: "🏥", count: 5 },
 ];
 
 export const vocabulary: VocabWord[] = [

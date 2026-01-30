@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Volume2, Check, RotateCcw, ChevronLeft, ChevronRight, Filter, Brain, Shuffle } from "lucide-react";
-import { vocabulary, vocabCategories, type VocabWord } from "@/data/vocabulary";
+import { allVocabulary as vocabulary, vocabCategories, type VocabWord } from "@/data/vocabulary";
 import { speak } from "@/lib/speech";
 import { getProgress, toggleVocabMastered } from "@/lib/progress-store";
 import { addCard, hasCard } from "@/lib/srs-engine";
