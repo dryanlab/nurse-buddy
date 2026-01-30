@@ -5,31 +5,54 @@
 // Current audio element for stopping
 let currentAudio: HTMLAudioElement | null = null;
 
+// Simple in-memory cache for TTS audio blobs
+const ttsCache = new Map<string, string>();
+
 export async function speak(text: string, rate = 1): Promise<void> {
   // Stop any currently playing audio
   stopSpeaking();
 
-  // Try OpenAI TTS first (much more natural)
-  try {
-    const res = await fetch("/api/tts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, speed: Math.max(0.25, rate) }),
-    });
+  // Normal speed (rate >= 0.8): use Web Speech API for instant response
+  // Slow speed (rate < 0.8): use OpenAI TTS for natural slow pronunciation
+  if (rate >= 0.8) {
+    return speakWithWebSpeech(text, rate);
+  }
 
-    if (res.ok) {
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      return new Promise((resolve, reject) => {
-        const audio = new Audio(url);
-        currentAudio = audio;
-        audio.onended = () => { URL.revokeObjectURL(url); currentAudio = null; resolve(); };
-        audio.onerror = (e) => { URL.revokeObjectURL(url); currentAudio = null; reject(e); };
-        audio.play().catch(reject);
+  // For slow speed, try OpenAI TTS (with caching)
+  const cacheKey = `${text}__${rate}`;
+  let audioUrl = ttsCache.get(cacheKey);
+
+  if (!audioUrl) {
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, speed: Math.max(0.25, rate) }),
       });
+
+      if (res.ok) {
+        const blob = await res.blob();
+        audioUrl = URL.createObjectURL(blob);
+        ttsCache.set(cacheKey, audioUrl);
+        // Keep cache under 100 entries
+        if (ttsCache.size > 100) {
+          const first = ttsCache.keys().next().value;
+          if (first) { URL.revokeObjectURL(ttsCache.get(first)!); ttsCache.delete(first); }
+        }
+      }
+    } catch {
+      // Fall through to Web Speech API
     }
-  } catch {
-    // Fall through to Web Speech API
+  }
+
+  if (audioUrl) {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio(audioUrl);
+      currentAudio = audio;
+      audio.onended = () => { currentAudio = null; resolve(); };
+      audio.onerror = (e) => { currentAudio = null; reject(e); };
+      audio.play().catch(reject);
+    });
   }
 
   // Fallback: Web Speech API
