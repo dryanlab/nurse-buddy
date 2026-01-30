@@ -258,12 +258,6 @@ export default function PhoneticsPage() {
             </div>
           </div>
 
-          {/* Description */}
-          <div className="bg-white rounded-2xl p-4 border border-[#F3E8E2]">
-            <div className="text-xs text-[#9CA3AF] font-medium mb-2">📖 发音说明</div>
-            <p className="text-sm text-[#4B5563] leading-relaxed">{selected.description}</p>
-          </div>
-
           {/* Mouth position with diagram + step-by-step */}
           <div className="bg-[#F0F4FF] rounded-2xl p-4">
             <div className="text-xs text-[#7C83FD] font-medium mb-3">👄 口型位置</div>
