@@ -14,7 +14,7 @@ export async function speak(text: string, rate = 1): Promise<void> {
     const res = await fetch("/api/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, speed: rate > 0.5 ? rate : 0.9 }),
+      body: JSON.stringify({ text, speed: Math.max(0.25, rate) }),
     });
 
     if (res.ok) {
