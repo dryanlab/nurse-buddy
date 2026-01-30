@@ -316,20 +316,25 @@ export default function ConversationPage() {
             </button>
           ))}
         </div>
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
-          {categories.map(c => (
-            <button
-              key={c.id}
-              onClick={() => setCatFilter(c.id)}
-              className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-                catFilter === c.id
-                  ? "bg-[#FF6B6B] text-white"
-                  : "bg-white text-gray-600 border border-gray-200"
-              }`}
-            >
-              {c.labelZh}
-            </button>
-          ))}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {categories.map(c => {
+            const count = c.id === "all"
+              ? conversationScenarios.filter(s => diffFilter === "all" || s.difficulty === diffFilter).length
+              : conversationScenarios.filter(s => s.category === c.id && (diffFilter === "all" || s.difficulty === diffFilter)).length;
+            return (
+              <button
+                key={c.id}
+                onClick={() => setCatFilter(c.id)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  catFilter === c.id
+                    ? "bg-[#FF6B6B] text-white"
+                    : "bg-white text-gray-600 border border-gray-200"
+                }`}
+              >
+                {c.labelZh} ({count})
+              </button>
+            );
+          })}
         </div>
 
         {/* Random button */}
