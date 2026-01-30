@@ -60,56 +60,42 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         setReady(true);
         return;
       }
-      // Then check Supabase session (for Google OAuth callback)
+      // Then check Supabase session (match code-buddy approach)
       const { getSessionUser, ensureProfile } = await import("@/lib/auth-store");
       const { getSupabase } = await import("@/lib/supabase");
       const supabase = getSupabase();
 
-      // Listen for auth state changes (handles OAuth callback token processing)
       if (supabase) {
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-          if (event === "SIGNED_IN" && session?.user) {
-            const { ensureProfile: ep } = await import("@/lib/auth-store");
-            const { hasProfile, needsSetup } = await ep();
-            if (needsSetup) {
-              router.replace("/complete-profile");
-            } else if (hasProfile) {
-              const su = await getSessionUser();
-              if (su) {
-                setUser(su);
-                const p = getProgress();
-                setLevelInfo(getLevelInfo(p.xp));
-                setCoins(getCoinState().coins);
-                setReady(true);
-              }
-            }
-            subscription.unsubscribe();
-          }
-        });
-        // Timeout: if no auth event in 3s, redirect to login
-        setTimeout(async () => {
-          if (!ready) {
-            const su = await getSessionUser();
-            if (su) {
-              setUser(su);
+        // Try getSession; if empty, wait 500ms and retry (OAuth token needs processing time)
+        let { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          await new Promise(r => setTimeout(r, 500));
+          ({ data: { session } } = await supabase.auth.getSession());
+          if (!session) { router.replace("/login"); return; }
+        }
+        const { hasProfile, needsSetup } = await ensureProfile();
+        if (needsSetup) { router.replace("/complete-profile"); return; }
+        if (hasProfile) {
+          const su = await getSessionUser();
+          if (su) {
+            setUser(su);
+            loadCloudData().then(() => {
               const p = getProgress();
               setLevelInfo(getLevelInfo(p.xp));
               setCoins(getCoinState().coins);
-              setReady(true);
-            } else {
-              const { needsSetup } = await ensureProfile();
-              if (needsSetup) {
-                router.replace("/complete-profile");
-              } else {
-                router.replace("/login");
-              }
-            }
-            subscription.unsubscribe();
+            });
+            const p = getProgress();
+            setLevelInfo(getLevelInfo(p.xp));
+            setCoins(getCoinState().coins);
+            setReady(true);
+            return;
           }
-        }, 3000);
+        }
+        router.replace("/login");
         return;
       }
 
+      // Fallback: no Supabase
       const sessionUser = await getSessionUser();
       if (sessionUser) {
         setUser(sessionUser);
@@ -117,11 +103,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         setLevelInfo(getLevelInfo(p.xp));
         setCoins(getCoinState().coins);
         setReady(true);
-        return;
-      }
-      const { needsSetup } = await ensureProfile();
-      if (needsSetup) {
-        router.replace("/complete-profile");
         return;
       }
       router.replace("/login");

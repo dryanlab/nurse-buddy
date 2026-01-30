@@ -16,27 +16,29 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const user = getUser();
-    if (user) { router.replace("/dashboard"); return; }
-    // Listen for Supabase auth state changes (handles Google OAuth callback)
-    if (isSupabaseConfigured) {
-      import("@/lib/supabase").then(({ getSupabase }) => {
+    async function check() {
+      const user = getUser();
+      if (user) { router.replace("/dashboard"); return; }
+      // Check Supabase session (Google OAuth callback)
+      if (isSupabaseConfigured) {
+        const { getSupabase } = await import("@/lib/supabase");
         const supabase = getSupabase();
-        if (!supabase) return;
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-          if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session?.user) {
+        if (supabase) {
+          let { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            await new Promise(r => setTimeout(r, 500));
+            ({ data: { session } } = await supabase.auth.getSession());
+          }
+          if (session) {
             const { ensureProfile } = await import("@/lib/auth-store");
             const { hasProfile, needsSetup } = await ensureProfile();
-            if (hasProfile) {
-              router.replace("/dashboard");
-            } else if (needsSetup) {
-              router.replace("/complete-profile");
-            }
-            subscription.unsubscribe();
+            if (hasProfile) { router.replace("/dashboard"); return; }
+            if (needsSetup) { router.replace("/complete-profile"); return; }
           }
-        });
-      });
+        }
+      }
     }
+    check();
   }, [router]);
 
   async function handleLogin() {
