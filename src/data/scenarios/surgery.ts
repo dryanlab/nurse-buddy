@@ -40,7 +40,7 @@ export const surgeryScenarios: ConversationScenario[] = [
     category: "surgery",
   },
   {
-    id: "post-op-care",
+    id: "surgery-post-op-care",
     title: "Post-Operative Care",
     titleZh: "术后护理",
     description: "Manage a patient in the post-anesthesia care unit",

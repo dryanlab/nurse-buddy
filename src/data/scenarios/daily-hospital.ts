@@ -97,7 +97,7 @@ export const dailyHospitalScenarios: ConversationScenario[] = [
     category: "daily-hospital",
   },
   {
-    id: "blood-transfusion",
+    id: "daily-blood-transfusion",
     title: "Blood Transfusion Consent",
     titleZh: "输血知情同意",
     description: "Prepare a patient for blood transfusion and obtain consent",
