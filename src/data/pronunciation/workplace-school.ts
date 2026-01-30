@@ -37,4 +37,4 @@ export const workplaceSchoolPronunciation: PronunciationItem[] = [
   { id: "ws-034", word: "I need to work overtime tonight.", phonetic: "/aɪ niːd tə wɜːrk ˈoʊvərtaɪm təˈnaɪt/", chinese: "我今晚得加班。", difficulty: "medium", tip: "overtime 复合词重音在前，tonight 重音第二", category: "职场学校", type: "phrase" },
   { id: "ws-035", word: "Can you proofread this for me?", phonetic: "/kæn ju ˈpruːfriːd ðɪs fɔːr mi/", chinese: "你能帮我校对一下吗？", difficulty: "medium", tip: "proofread 复合词 /ˈpruːfriːd/，不规则动词", category: "职场学校", type: "phrase" },
   { id: "ws-036", word: "I bombed the test.", phonetic: "/aɪ bɑːmd ðə tɛst/", chinese: "我考砸了。", difficulty: "easy", tip: "bombed 口语表考砸，/md/ 词尾", category: "职场学校", type: "phrase" },
-  { id: "ws-037", word: "Let's set up a study group.", phonetic: "/lɛts sɛt ʌp ə ˈstʌdi ɡruːp/", chinese: "我们建个学习小组吧。", difficulty: "easy", tip: "set up 连读 /sɛtʌp/，study group 复合名词", category: "职场学校", type: "phrase" },
+  { id: "ws-037", word: "Let's set up a study group.", phonetic: "/lɛts sɛt ʌp ə ˈstʌdi ɡruːp/", chinese: "我们建个学习小组吧。", difficulty: "easy", tip: "set up 连读 /sɛtʌp/，study group 复合名词", category: "职场学校", type: "phrase" },];
